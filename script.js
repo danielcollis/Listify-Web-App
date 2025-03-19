@@ -55,3 +55,22 @@ function addLink() {
     document.getElementById('textInput').value = '';
     document.getElementById('priceInput').value = '';
 }
+
+// Add event listeners to each input field to trigger the addLink function when pressing Enter
+document.getElementById('linkInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        addLink();
+    }
+});
+
+document.getElementById('textInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        addLink();
+    }
+});
+
+document.getElementById('priceInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        addLink();
+    }
+});
