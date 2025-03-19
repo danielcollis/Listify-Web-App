@@ -4,9 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listify</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="list.css">
 </head>
 <body>
+    <!-- Hamburger Menu -->
+    <div id="menuToggle" class="menu-toggle">
+        &#9776; <!-- Hamburger icon -->
+    </div>
+
+    <!-- Side Menu -->
+    <div id="sideMenu" class="side-menu">
+        <!-- Home Button -->
+        <button onclick="window.location.href='home.html'">Home</button>
+    </div>
+
     <h1 class="title">Listify</h1>
     <div class="container">
         <input type="text" id="linkInput" placeholder="Enter link">
@@ -19,6 +30,6 @@
     
     <h2 id="totalPrice">Total: $0.00</h2>
     
-    <script src="script.js"></script>
+    <script src="list.js"></script>
 </body>
 </html>
