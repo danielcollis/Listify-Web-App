@@ -47,19 +47,58 @@ button:hover {
 ul {
     list-style-type: none;
     padding: 0;
+    width: 80%;
+    max-width: 600px;
+    margin: 20px auto;
 }
 
 li {
-    margin: 5px 0;
-    padding: 10px;
+    margin: 10px auto;
+    padding: 10px 15px;
     background: white;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+}
+
+li a {
+    color: #d63384;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+li a:hover {
+    text-decoration: underline;
 }
 
 .small-input {
     width: 100px; /* Adjust the width to fit price input */
     text-align: center;
+}
+
+/* Delete button styling */
+.delete-btn {
+    background-color: #ff4d6d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.delete-btn:hover {
+    background-color: #d63384;
 }
 
 /* Hamburger menu styles */

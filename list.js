@@ -16,12 +16,31 @@ function formatPrice(price) {
     return price;
 }
 
-function updateTotal(price) {
+function updateTotal(price, isAddition = true) {
     let numericValue = parseFloat(price.replace(/[^0-9.]/g, ""));
     if (!isNaN(numericValue)) {
-        total += numericValue;
+        if (isAddition) {
+            total += numericValue;
+        } else {
+            total -= numericValue;
+        }
+        // Ensure we don't go below zero due to rounding errors
+        total = Math.max(0, total);
     }
     document.getElementById('totalPrice').innerText = `Total: $${total.toFixed(2)}`;
+}
+
+function deleteItem(element) {
+    // Extract the price from the list item
+    const listItem = element.parentElement;
+    const priceSpan = listItem.querySelector('.item-price');
+    const priceText = priceSpan ? priceSpan.textContent : '';
+    
+    // Update the total by subtracting this price
+    updateTotal(priceText, false);
+    
+    // Remove the list item
+    listItem.remove();
 }
 
 function addLink() {
@@ -43,7 +62,31 @@ function addLink() {
     price = formatPrice(price);
     
     const listItem = document.createElement('li');
-    listItem.innerHTML = `<a href="${link}" target="_blank">${text || link}</a> - ${price}`;
+    
+    // Create link element
+    const linkElement = document.createElement('a');
+    linkElement.href = link;
+    linkElement.target = "_blank";
+    linkElement.textContent = text || link;
+    
+    // Create price span
+    const priceSpan = document.createElement('span');
+    priceSpan.className = 'item-price';
+    priceSpan.textContent = price;
+    
+    // Create delete button
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-btn';
+    deleteButton.textContent = 'X';
+    deleteButton.onclick = function() {
+        deleteItem(this);
+    };
+    
+    // Append all elements to the list item
+    listItem.appendChild(linkElement);
+    listItem.appendChild(document.createTextNode(' - '));
+    listItem.appendChild(priceSpan);
+    listItem.appendChild(deleteButton);
     
     document.getElementById('linkList').appendChild(listItem);
     
