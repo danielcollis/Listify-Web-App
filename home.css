@@ -3,11 +3,11 @@ body {
     margin: 0;
     background-color: #ffe6f2;
     overflow-x: hidden;
+    text-align: center;
 }
 
 .main-content {
     padding: 20px;
-    text-align: center;
 }
 
 h1 {
@@ -18,4 +18,19 @@ h1 {
 p {
     font-size: 1.2em;
     color: #333;
+}
+
+.btn {
+    background-color: #d63384;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.btn:hover {
+    background-color: #b02a6b;
 }
