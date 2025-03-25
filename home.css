@@ -34,3 +34,20 @@ p {
 .btn:hover {
     background-color: #b02a6b;
 }
+
+.paste-list-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.paste-list-container input {
+    width: 80%;
+    max-width: 400px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 2px solid #d63384;
+    border-radius: 5px;
+    outline: none;
+}
