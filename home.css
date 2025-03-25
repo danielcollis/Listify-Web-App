@@ -42,12 +42,22 @@ p {
     align-items: center;
 }
 
-.paste-list-container input {
+.paste-list-input-group {
+    display: flex;
     width: 80%;
     max-width: 400px;
+}
+
+.paste-list-input-group input {
+    flex-grow: 1;
     padding: 10px;
-    margin-bottom: 10px;
     border: 2px solid #d63384;
-    border-radius: 5px;
+    border-radius: 5px 0 0 5px;
     outline: none;
+}
+
+.paste-list-input-group .btn-go {
+    margin: 0;
+    border-radius: 0 5px 5px 0;
+    padding: 10px 20px;
 }
