@@ -55,6 +55,96 @@ function deleteItem(element) {
     listItem.remove();
 }
 
+function createEditModal(listItem, itemIndex) {
+    // Create edit description modal
+    const modal = document.createElement('div');
+    modal.className = 'description-modal';
+    modal.innerHTML = `
+        <div class="description-modal-content">
+            <h3>Edit Description</h3>
+            <textarea id="descriptionTextarea" rows="4" placeholder="Enter item description">${listItems[itemIndex].description || ''}</textarea>
+            <div class="modal-buttons">
+                <button id="saveDescriptionBtn">Enter</button>
+                <button id="cancelDescriptionBtn">Cancel</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Style the modal
+    const style = document.createElement('style');
+    style.textContent = `
+        .description-modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .description-modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .description-modal-content textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .modal-buttons button {
+            width: 48%;
+            padding: 10px;
+            background-color: #d63384;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal-buttons button:hover {
+            background-color: #b0296b;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Save button logic
+    document.getElementById('saveDescriptionBtn').addEventListener('click', () => {
+        const description = document.getElementById('descriptionTextarea').value.trim();
+        listItems[itemIndex].description = description;
+        document.body.removeChild(modal);
+        document.head.removeChild(style);
+    });
+
+    // Cancel button logic
+    document.getElementById('cancelDescriptionBtn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        document.head.removeChild(style);
+    });
+
+    // Prevent modal from closing when clicking on content
+    modal.querySelector('.description-modal-content').addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Close modal if clicked outside
+    modal.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        document.head.removeChild(style);
+    });
+}
+
 function addLink() {
     let link = document.getElementById('linkInput').value.trim();
     const text = document.getElementById('textInput').value.trim();
@@ -86,6 +176,16 @@ function addLink() {
     priceSpan.className = 'item-price';
     priceSpan.textContent = price;
     
+    // Create edit button
+    const editButton = document.createElement('button');
+    editButton.className = 'edit-btn';
+    editButton.innerHTML = '&#9998;'; // Pencil icon
+    editButton.onclick = function() {
+        const listItem = this.parentElement;
+        const index = Array.from(listItem.parentNode.children).indexOf(listItem);
+        createEditModal(listItem, index);
+    };
+    
     // Create delete button
     const deleteButton = document.createElement('button');
     deleteButton.className = 'delete-btn';
@@ -98,6 +198,7 @@ function addLink() {
     listItem.appendChild(linkElement);
     listItem.appendChild(document.createTextNode(' - '));
     listItem.appendChild(priceSpan);
+    listItem.appendChild(editButton);
     listItem.appendChild(deleteButton);
     
     document.getElementById('linkList').appendChild(listItem);
@@ -106,7 +207,8 @@ function addLink() {
     listItems.push({
         link: link,
         text: text || link,
-        price: price
+        price: price,
+        description: '' // Initialize empty description
     });
     
     // Update total price
@@ -118,8 +220,28 @@ function addLink() {
     document.getElementById('priceInput').value = '';
 }
 
-// Share Functionality
+// Event listeners for Enter key on input fields
 document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to each input field to trigger the addLink function when pressing Enter
+    document.getElementById('linkInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            addLink();
+        }
+    });
+
+    document.getElementById('textInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            addLink();
+        }
+    });
+
+    document.getElementById('priceInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            addLink();
+        }
+    });
+
+    // Share Functionality
     const shareButton = document.getElementById('shareButton');
     const sharePopup = document.getElementById('shareLinkPopup');
     const closePopup = document.querySelector('.close-popup');
@@ -177,33 +299,14 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error loading shared list:', error);
         }
     }
-});
 
-// Add event listeners to each input field to trigger the addLink function when pressing Enter
-document.getElementById('linkInput').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        addLink();
-    }
-});
-
-document.getElementById('textInput').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        addLink();
-    }
-});
-
-document.getElementById('priceInput').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        addLink();
-    }
-});
-
-// Toggle side menu when hamburger icon is clicked
-document.getElementById("menuToggle").addEventListener("click", function() {
-    let menu = document.getElementById("sideMenu");
-    if (menu.style.width === "250px") {
-        menu.style.width = "0"; // Close the menu
-    } else {
-        menu.style.width = "250px"; // Open the menu
-    }
+    // Toggle side menu when hamburger icon is clicked
+    document.getElementById("menuToggle").addEventListener("click", function() {
+        let menu = document.getElementById("sideMenu");
+        if (menu.style.width === "250px") {
+            menu.style.width = "0"; // Close the menu
+        } else {
+            menu.style.width = "250px"; // Open the menu
+        }
+    });
 });

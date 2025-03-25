@@ -248,3 +248,24 @@ li a:hover {
 #copyShareLink:hover {
     background-color: #138496;
 }
+
+.edit-btn {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.edit-btn:hover {
+    background-color: #138496;
+}
