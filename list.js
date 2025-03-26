@@ -318,8 +318,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 deleteButton.textContent = 'X';
                 deleteButton.className = 'delete-btn';
                 deleteButton.onclick = function () {
-                    updateTotal(`$${fund.goal.toFixed(2)}`, false);
-                    listItem.remove();
+                const index = fundItems.findIndex(f => f.name === fund.name && f.goal === fund.goal);
+                if (index !== -1) {
+                    fundItems.splice(index, 1); // Remove from fundItems array
+                }
+                updateTotal(`$${fund.goal.toFixed(2)}`, false);
+                listItem.remove();
                 };
     
                 listItem.appendChild(deleteButton);
@@ -344,84 +348,84 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    //Add Fund Functionality
-        const fundNameInput = document.createElement("input");
-        fundNameInput.type = "text";
-        fundNameInput.id = "fundNameInput";
-        fundNameInput.placeholder = "Fund Name";
-    
-        const fundGoalInput = document.createElement("input");
-        fundGoalInput.type = "number";
-        fundGoalInput.id = "fundGoalInput";
-        fundGoalInput.placeholder = "Fund Goal Amount ($)";
-    
-        const addFundBtn = document.createElement("button");
-        addFundBtn.id = "addFundBtn";
-        addFundBtn.textContent = "Add Fund";
-    
-        const fundContainer = document.createElement("div");
-        fundContainer.className = "container fund-container";
-        fundContainer.appendChild(fundNameInput);
-        fundContainer.appendChild(fundGoalInput);
-        fundContainer.appendChild(addFundBtn)
+    // Add Fund Functionality
+const fundNameInput = document.createElement("input");
+fundNameInput.type = "text";
+fundNameInput.id = "fundNameInput";
+fundNameInput.placeholder = "Fund Name";
 
-        document.body.insertBefore(fundContainer, document.getElementById("shareButton"));
+const fundGoalInput = document.createElement("input");
+fundGoalInput.type = "number";
+fundGoalInput.id = "fundGoalInput";
+fundGoalInput.placeholder = "Fund Goal Amount ($)";
 
-        addFundBtn.addEventListener("click", function () {
-            const name = fundNameInput.value.trim();
-            const goal = parseFloat(fundGoalInput.value.trim());
-    
-            if (!name) {
-                alert("Please enter a fund name.");
-                return;
-            }
-            if (isNaN(goal) || goal <= 0) {
-                alert("Please enter a valid positive number for the fund goal.");
-                return;
-            }
-    
-            // Create a list item for the fund
-            const listItem = document.createElement('li');
-            listItem.className = 'fund-item'; 
+const addFundBtn = document.createElement("button");
+addFundBtn.id = "addFundBtn";
+addFundBtn.textContent = "Add Fund";
 
-            // Add text content
-             listItem.textContent = `Fund: ${name} — Goal: $${goal.toFixed(2)}`;
+const fundContainer = document.createElement("div");
+fundContainer.className = "container fund-container";
+fundContainer.appendChild(fundNameInput);
+fundContainer.appendChild(fundGoalInput);
+fundContainer.appendChild(addFundBtn);
 
-            // Optional: add delete button
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'X';
-            deleteButton.className = 'delete-btn';
-            deleteButton.onclick = function () {
-                listItem.remove();
-            };
+document.body.insertBefore(fundContainer, document.getElementById("shareButton"));
 
-             listItem.appendChild(deleteButton);
+addFundBtn.addEventListener("click", function () {
+    const name = fundNameInput.value.trim();
+    const goal = parseFloat(fundGoalInput.value.trim());
 
-            // Add to list
-            document.getElementById('linkList').appendChild(listItem);
+    if (!name) {
+        alert("Please enter a fund name.");
+        return;
+    }
+    if (isNaN(goal) || goal <= 0) {
+        alert("Please enter a valid positive number for the fund goal.");
+        return;
+    }
 
-            //Update total
-            updateTotal(`$${goal.toFixed(2)}`);
+    // Create a list item for the fund
+    const listItem = document.createElement('li');
+    listItem.className = 'fund-item';
+    listItem.textContent = `Fund: ${name} — Goal: $${goal.toFixed(2)}`;
 
-            // Store the fund in the listItems array
-            fundItems.push({
-                name: name,
-                goal: goal
-            });
-             
-    
-            // Clear inputs
-            fundNameInput.value = "";
-            fundGoalInput.value = "";
-        });
-    
-        //Allow Enter Key to Trigger Fund Add
-        [fundNameInput, fundGoalInput].forEach(input => {
-            input.addEventListener("keypress", function (e) {
-                if (e.key === "Enter") {
-                    addFundBtn.click();
-                }
-            });
-        });
+    // Create delete button
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'X';
+    deleteButton.className = 'delete-btn';
 
+    // ✅ Proper delete logic
+    deleteButton.onclick = function () {
+        const index = fundItems.findIndex(f => f.name === name && f.goal === goal);
+        if (index !== -1) {
+            fundItems.splice(index, 1);
+        }
+        updateTotal(`$${goal.toFixed(2)}`, false);
+        listItem.remove();
+    };
+
+    listItem.appendChild(deleteButton);
+    document.getElementById('linkList').appendChild(listItem);
+
+    updateTotal(`$${goal.toFixed(2)}`);
+
+    // Track fund
+    fundItems.push({
+        name: name,
+        goal: goal
+    });
+
+    // Clear inputs
+    fundNameInput.value = "";
+    fundGoalInput.value = "";
+});
+
+// Allow Enter key to trigger fund add
+[fundNameInput, fundGoalInput].forEach(input => {
+    input.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            addFundBtn.click();
+        }
+    });
+});
 });
