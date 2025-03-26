@@ -269,3 +269,16 @@ li a:hover {
 .edit-btn:hover {
     background-color: #138496;
 }
+
+/* Add these styles to the existing list.css file */
+.title a {
+    color: #d63384;
+    text-decoration: none;
+    font-size: 2.5em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.title a:hover {
+    text-decoration: underline;
+}
