@@ -13,12 +13,24 @@ body {
 }
 
 .container {
-    display: inline-block;
-    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px; 
     padding: 20px;
+    background-color: #fff;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
+
+.fund-container {
+    margin-top: 30px;
+}
+
 
 input {
     width: 80%;
@@ -269,3 +281,5 @@ li a:hover {
 .edit-btn:hover {
     background-color: #138496;
 }
+
+

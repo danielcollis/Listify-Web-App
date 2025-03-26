@@ -1,5 +1,6 @@
 let total = 0;
 let listItems = []; // Array to store list items
+let fundItems = [];
 
 function formatPrice(price) {
     if (!price) return "";
@@ -250,8 +251,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     shareButton.addEventListener('click', function() {
         // Generate a shareable link with the current list items
-        const listData = JSON.stringify(listItems);
-        const encodedData = btoa(encodeURIComponent(listData));
+        const sharedPayload = {
+            items: listItems,
+            funds: fundItems
+        };
+        
+        const encodedData = btoa(encodeURIComponent(JSON.stringify(sharedPayload)));
         const shareableLink = `${window.location.origin}${window.location.pathname}?list=${encodedData}`;
         
         // Display the link in the popup
@@ -278,7 +283,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (encodedList) {
         try {
             const decodedData = decodeURIComponent(atob(encodedList));
-            const loadedItems = JSON.parse(decodedData);
+            const loadedData = JSON.parse(decodedData);
+            const loadedItems = loadedData.items || [];
+            const loadedFunds = loadedData.funds || [];
             
             // Clear existing list
             document.getElementById('linkList').innerHTML = '';
@@ -295,6 +302,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Trigger add link to recreate the item
                 addLink();
             });
+
+            loadedFunds.forEach(fund => {
+                const listItem = document.createElement('li');
+                listItem.className = 'fund-item';
+                listItem.textContent = `Fund: ${fund.name} — Goal: $${fund.goal.toFixed(2)}`;
+    
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'X';
+                deleteButton.className = 'delete-btn';
+                deleteButton.onclick = function () {
+                    updateTotal(`$${fund.goal.toFixed(2)}`, false);
+                    listItem.remove();
+                };
+    
+                listItem.appendChild(deleteButton);
+                document.getElementById('linkList').appendChild(listItem);
+    
+                fundItems.push(fund); // Restore into fundItems array
+                updateTotal(`$${fund.goal.toFixed(2)}`);
+            });
+
         } catch (error) {
             console.error('Error loading shared list:', error);
         }
@@ -309,4 +337,85 @@ document.addEventListener('DOMContentLoaded', function() {
             menu.style.width = "250px"; // Open the menu
         }
     });
+    
+    //Add Fund Functionality
+        const fundNameInput = document.createElement("input");
+        fundNameInput.type = "text";
+        fundNameInput.id = "fundNameInput";
+        fundNameInput.placeholder = "Fund Name";
+    
+        const fundGoalInput = document.createElement("input");
+        fundGoalInput.type = "number";
+        fundGoalInput.id = "fundGoalInput";
+        fundGoalInput.placeholder = "Fund Goal Amount ($)";
+    
+        const addFundBtn = document.createElement("button");
+        addFundBtn.id = "addFundBtn";
+        addFundBtn.textContent = "Add Fund";
+    
+        const fundContainer = document.createElement("div");
+        fundContainer.className = "container fund-container";
+        fundContainer.appendChild(fundNameInput);
+        fundContainer.appendChild(fundGoalInput);
+        fundContainer.appendChild(addFundBtn)
+
+        document.body.insertBefore(fundContainer, document.getElementById("shareButton"));
+
+        addFundBtn.addEventListener("click", function () {
+            const name = fundNameInput.value.trim();
+            const goal = parseFloat(fundGoalInput.value.trim());
+    
+            if (!name) {
+                alert("Please enter a fund name.");
+                return;
+            }
+            if (isNaN(goal) || goal <= 0) {
+                alert("Please enter a valid positive number for the fund goal.");
+                return;
+            }
+    
+            // Create a list item for the fund
+            const listItem = document.createElement('li');
+            listItem.className = 'fund-item'; 
+
+            // Add text content
+             listItem.textContent = `Fund: ${name} — Goal: $${goal.toFixed(2)}`;
+
+            // Optional: add delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'X';
+            deleteButton.className = 'delete-btn';
+            deleteButton.onclick = function () {
+                listItem.remove();
+            };
+
+             listItem.appendChild(deleteButton);
+
+            // Add to list
+            document.getElementById('linkList').appendChild(listItem);
+
+            //Update total
+            updateTotal(`$${goal.toFixed(2)}`);
+
+            // Store the fund in the listItems array
+            fundItems.push({
+                name: name,
+                goal: goal
+            });
+             
+    
+            // Clear inputs
+            fundNameInput.value = "";
+            fundGoalInput.value = "";
+        });
+    
+        //Allow Enter Key to Trigger Fund Add
+        [fundNameInput, fundGoalInput].forEach(input => {
+            input.addEventListener("keypress", function (e) {
+                if (e.key === "Enter") {
+                    addFundBtn.click();
+                }
+            });
+        });
+
 });
