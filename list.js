@@ -39,12 +39,16 @@ function deleteItem(element) {
     const priceText = priceSpan ? priceSpan.textContent : '';
     const linkElement = listItem.querySelector('a');
     
+    // Remove trailing slash and compare URLs
+    const normalizeUrl = (url) => url.replace(/\/+$/, '');
+    
     // Remove the item from our tracking array
-    const indexToRemove = listItems.findIndex(item => 
-        item.link === linkElement.href && 
-        item.text === linkElement.textContent && 
-        item.price === priceText
-    );
+    const indexToRemove = listItems.findIndex(item => {
+        return normalizeUrl(item.link) === normalizeUrl(linkElement.href) && 
+               item.text === linkElement.textContent && 
+               item.price === priceText;
+    });
+    
     if (indexToRemove !== -1) {
         listItems.splice(indexToRemove, 1);
     }
@@ -54,6 +58,8 @@ function deleteItem(element) {
     
     // Remove the list item
     listItem.remove();
+
+    console.log(listItems)
 }
 
 function createEditModal(listItem, itemIndex) {
