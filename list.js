@@ -201,10 +201,19 @@ function addLink() {
         deleteItem(this);
     };
     
+    // Create purchase toggle button
+    const purchaseButton = document.createElement('button');
+    purchaseButton.className = 'purchase-btn';
+    purchaseButton.innerHTML = '&#10004;'; // Checkmark icon
+    purchaseButton.onclick = function() {
+        togglePurchased(this);
+    };
+    
     // Append all elements to the list item
     listItem.appendChild(linkElement);
     listItem.appendChild(document.createTextNode(' - '));
     listItem.appendChild(priceSpan);
+    listItem.appendChild(purchaseButton);
     listItem.appendChild(editButton);
     listItem.appendChild(deleteButton);
     
@@ -215,7 +224,8 @@ function addLink() {
         link: link,
         text: text || link,
         price: price,
-        description: '' // Initialize empty description
+        description: '', // Initialize empty description
+        purchased: false // Add purchased status
     });
     
     // Update total price
@@ -225,6 +235,29 @@ function addLink() {
     document.getElementById('linkInput').value = '';
     document.getElementById('textInput').value = '';
     document.getElementById('priceInput').value = '';
+}
+
+function togglePurchased(button) {
+    const listItem = button.parentElement;
+    const index = Array.from(listItem.parentNode.children).indexOf(listItem);
+    
+    // Toggle purchased status
+    listItems[index].purchased = !listItems[index].purchased;
+    
+    // Get price for this item
+    const priceText = listItem.querySelector('.item-price').textContent;
+    
+    if (listItems[index].purchased) {
+        // Mark as purchased
+        listItem.classList.add('purchased-item');
+        // Subtract price from total
+        updateTotal(priceText, false);
+    } else {
+        // Unmark as purchased
+        listItem.classList.remove('purchased-item');
+        // Add price back to total
+        updateTotal(priceText, true);
+    }
 }
 
 // Event listeners for Enter key on input fields
@@ -307,6 +340,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Trigger add link to recreate the item
                 addLink();
+                
+                // Restore purchased status if applicable
+                if (item.purchased) {
+                    const lastAddedItem = document.getElementById('linkList').lastChild;
+                    const purchaseButton = lastAddedItem.querySelector('.purchase-btn');
+                    togglePurchased(purchaseButton);
+                }
             });
 
             loadedFunds.forEach(fund => {

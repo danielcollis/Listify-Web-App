@@ -294,3 +294,17 @@ li a:hover {
 .title a:hover {
     text-decoration: underline;
 }
+
+.purchased-item {
+    opacity: 0.6;
+    text-decoration: line-through;
+    background-color: #f0f0f0 !important;
+}
+
+.purchased-item a {
+    color: #888;
+}
+
+.purchased-item .item-price {
+    color: #888;
+}
