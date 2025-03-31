@@ -1,6 +1,7 @@
 let total = 0;
 let listItems = []; // Array to store list items
 let fundItems = []; // Array to store fund items
+let wishlistName = "My Wishlist";
 
 function formatPrice(price) {
     if (!price) return "";
@@ -393,6 +394,14 @@ function updateFundDisplay(fundIndex) {
     }
 }
 
+//handles wishlist name changes
+function updateWishlistName(name) {
+    wishlistName = name;
+    document.getElementById('wishlistNameHeading').textContent = name;
+    // Also update the page title to include the wishlist name
+    document.title = `${name} - Listify`;
+}
+
 // Event listeners for Enter key on input fields
 document.addEventListener('DOMContentLoaded', function() {
     // Add styles for fund elements
@@ -486,7 +495,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Generate a shareable link with the current list items
         const sharedPayload = {
             items: listItems,
-            funds: fundItems
+            funds: fundItems,
+            name: wishlistName
         };
         
         const encodedData = btoa(encodeURIComponent(JSON.stringify(sharedPayload)));
@@ -519,6 +529,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const loadedData = JSON.parse(decodedData);
             const loadedItems = loadedData.items || [];
             const loadedFunds = loadedData.funds || [];
+            const loadedName = loadedData.name || "My Wishlist"
+
+            //Update the wishlist name
+            updateWishlistName(loadedName)
             
             // Clear existing list
             document.getElementById('linkList').innerHTML = '';
@@ -725,6 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+
     // connect toggle button after share button
     let togglePurchasedButton = document.getElementById("togglePurchasedButton")
 
@@ -747,5 +762,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.style.display = purchasedItemsHidden ? 'none' : '';
             }
         });
+    });
+  
+    // Add Wishlist Name Edit Functionality
+    const editNameBtn = document.getElementById('editNameBtn');
+    const nameEditModal = document.getElementById('nameEditModal');
+    const wishlistNameInput = document.getElementById('wishlistNameInput');
+    const saveNameBtn = document.getElementById('saveNameBtn');
+    const cancelNameBtn = document.getElementById('cancelNameBtn');
+    
+    // Open modal when edit button is clicked
+    editNameBtn.addEventListener('click', function() {
+        wishlistNameInput.value = wishlistName;
+        nameEditModal.style.display = 'block';
+        wishlistNameInput.focus();
+    });
+    
+    // Save button functionality
+    saveNameBtn.addEventListener('click', function() {
+        const newName = wishlistNameInput.value.trim();
+        if (newName) {
+            updateWishlistName(newName);
+        }
+        nameEditModal.style.display = 'none';
+    });
+    
+    // Cancel button functionality
+    cancelNameBtn.addEventListener('click', function() {
+        nameEditModal.style.display = 'none';
+    });
+    
+    // Allow Enter key in name input
+    wishlistNameInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            saveNameBtn.click();
+        }
+    });
+    
+    // Close modal if clicked outside
+    nameEditModal.addEventListener('click', function(e) {
+        if (e.target === nameEditModal) {
+            nameEditModal.style.display = 'none';
+        }
     });
 });
