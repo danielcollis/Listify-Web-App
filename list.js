@@ -724,4 +724,38 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Create toggle button for purchased items
+    const togglePurchasedButton = document.createElement('button');
+    togglePurchasedButton.id = 'togglePurchasedButton';
+    togglePurchasedButton.className = 'toggle-btn';
+    togglePurchasedButton.textContent = 'Hide Purchased Items';
+    togglePurchasedButton.style.position = 'fixed';
+    togglePurchasedButton.style.top = '65px';
+    togglePurchasedButton.style.right = '20px';
+    togglePurchasedButton.style.zIndex = '100';
+
+    // Add toggle button after share button
+    document.body.insertBefore(togglePurchasedButton, document.getElementById('shareLinkPopup'));
+
+    // Initialize hidden state
+    let purchasedItemsHidden = false;
+
+    // Toggle function for hiding/showing purchased items
+    togglePurchasedButton.addEventListener('click', function() {
+        purchasedItemsHidden = !purchasedItemsHidden;
+        
+        // Update button text
+        this.textContent = purchasedItemsHidden ? 'Show Purchased Items' : 'Hide Purchased Items';
+        
+        // Get all list items
+        const listItems = document.querySelectorAll('#linkList li');
+        
+        // Toggle visibility based on purchased status
+        listItems.forEach(item => {
+            if (item.classList.contains('purchased-item')) {
+                item.style.display = purchasedItemsHidden ? 'none' : '';
+            }
+        });
+    });
 });
