@@ -64,16 +64,17 @@ function deleteItem(element) {
 }
 
 function createEditModal(listItem, itemIndex) {
-    // Create edit description modal
+    // Create edit modal for name and price
     const modal = document.createElement('div');
     modal.className = 'description-modal';
     modal.innerHTML = `
         <div class="description-modal-content">
-            <h3>Edit Description</h3>
-            <textarea id="descriptionTextarea" rows="4" placeholder="Enter item description">${listItems[itemIndex].description || ''}</textarea>
+            <h3>Edit Item</h3>
+            <input type="text" id="editNameInput" placeholder="Item name" value="${listItems[itemIndex].text}">
+            <input type="text" id="editPriceInput" placeholder="Item price" value="${listItems[itemIndex].price}">
             <div class="modal-buttons">
-                <button id="saveDescriptionBtn">Enter</button>
-                <button id="cancelDescriptionBtn">Cancel</button>
+                <button id="saveEditBtn">Save</button>
+                <button id="cancelEditBtn">Cancel</button>
             </div>
         </div>
     `;
@@ -102,15 +103,18 @@ function createEditModal(listItem, itemIndex) {
             max-width: 500px;
             text-align: center;
         }
-        .description-modal-content textarea {
+        .description-modal-content input {
             width: 100%;
             margin: 10px 0;
             padding: 10px;
             box-sizing: border-box;
+            border: 2px solid #d63384;
+            border-radius: 5px;
         }
         .modal-buttons {
             display: flex;
             justify-content: space-between;
+            margin-top: 15px;
         }
         .modal-buttons button {
             width: 48%;
@@ -128,15 +132,40 @@ function createEditModal(listItem, itemIndex) {
     document.head.appendChild(style);
 
     // Save button logic
-    document.getElementById('saveDescriptionBtn').addEventListener('click', () => {
-        const description = document.getElementById('descriptionTextarea').value.trim();
-        listItems[itemIndex].description = description;
+    document.getElementById('saveEditBtn').addEventListener('click', () => {
+        const newName = document.getElementById('editNameInput').value.trim();
+        const newPrice = document.getElementById('editPriceInput').value.trim();
+        
+        // Format price
+        const formattedPrice = formatPrice(newPrice);
+        
+        // Get current price for comparison
+        const oldPrice = listItems[itemIndex].price;
+        
+        // Update the item in our tracking array
+        listItems[itemIndex].text = newName;
+        listItems[itemIndex].price = formattedPrice;
+        
+        // Update the displayed item
+        const linkEl = listItem.querySelector('a');
+        const priceEl = listItem.querySelector('.item-price');
+        
+        linkEl.textContent = newName;
+        priceEl.textContent = formattedPrice;
+        
+        // Update the total price
+        if (oldPrice !== formattedPrice && !listItems[itemIndex].purchased) {
+            // Subtract old price and add new price
+            if (oldPrice) updateTotal(oldPrice, false);
+            if (formattedPrice) updateTotal(formattedPrice, true);
+        }
+        
         document.body.removeChild(modal);
         document.head.removeChild(style);
     });
 
     // Cancel button logic
-    document.getElementById('cancelDescriptionBtn').addEventListener('click', () => {
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
         document.body.removeChild(modal);
         document.head.removeChild(style);
     });
