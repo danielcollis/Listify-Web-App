@@ -739,6 +739,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+
+    // connect toggle button after share button
+    let togglePurchasedButton = document.getElementById("togglePurchasedButton")
+
+    // Initialize hidden state
+    let purchasedItemsHidden = false;
+
+    // Toggle function for hiding/showing purchased items
+    togglePurchasedButton.addEventListener('click', function() {
+        purchasedItemsHidden = !purchasedItemsHidden;
+        
+        // Update button text
+        this.textContent = purchasedItemsHidden ? 'Show Purchased Items' : 'Hide Purchased Items';
+        
+        // Get all list items
+        const listItems = document.querySelectorAll('#linkList li');
+        
+        // Toggle visibility based on purchased status
+        listItems.forEach(item => {
+            if (item.classList.contains('purchased-item')) {
+                item.style.display = purchasedItemsHidden ? 'none' : '';
+            }
+        });
+    });
+  
     // Add Wishlist Name Edit Functionality
     const editNameBtn = document.getElementById('editNameBtn');
     const nameEditModal = document.getElementById('nameEditModal');
@@ -780,5 +805,4 @@ document.addEventListener('DOMContentLoaded', function() {
             nameEditModal.style.display = 'none';
         }
     });
-
 });
