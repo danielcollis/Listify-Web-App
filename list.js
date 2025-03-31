@@ -725,18 +725,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Create toggle button for purchased items
-    const togglePurchasedButton = document.createElement('button');
-    togglePurchasedButton.id = 'togglePurchasedButton';
-    togglePurchasedButton.className = 'toggle-btn';
-    togglePurchasedButton.textContent = 'Hide Purchased Items';
-    togglePurchasedButton.style.position = 'fixed';
-    togglePurchasedButton.style.top = '65px';
-    togglePurchasedButton.style.right = '20px';
-    togglePurchasedButton.style.zIndex = '100';
-
-    // Add toggle button after share button
-    document.body.insertBefore(togglePurchasedButton, document.getElementById('shareLinkPopup'));
+    // connect toggle button after share button
+    let togglePurchasedButton = document.getElementById("togglePurchasedButton")
 
     // Initialize hidden state
     let purchasedItemsHidden = false;
