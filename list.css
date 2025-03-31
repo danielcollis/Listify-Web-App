@@ -465,3 +465,86 @@ li a:hover {
         width: 95%;
     }
 }
+
+/* Wishlist Name Display Styles */
+.wishlist-name-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto 20px;
+    max-width: 80%;
+}
+
+#wishlistNameHeading {
+    color: #d63384;
+    margin: 0;
+    padding: 5px 10px;
+    font-size: 1.5em;
+    text-align: center;
+    display: inline-block;
+}
+
+.edit-name-btn {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+}
+
+.edit-name-btn:hover {
+    background-color: #138496;
+}
+
+/* Wishlist Name Edit Modal */
+.name-edit-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.name-edit-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.name-edit-modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin: 15px 0;
+    box-sizing: border-box;
+    border: 2px solid #d63384;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.name-edit-modal-content .modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.name-edit-modal-content .modal-buttons button {
+    width: 48%;
+    padding: 10px;
+}
