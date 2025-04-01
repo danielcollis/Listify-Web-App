@@ -576,3 +576,91 @@ li a:hover {
     width: 48%;
     padding: 10px;
 }
+
+/* Styled select dropdowns for tags and filters */
+select#priceRange,
+select#productType,
+select#filterPriceRange,
+select#filterProductType {
+    padding: 10px;
+    width: 80%;
+    max-width: 400px;
+    border: 2px solid #d63384;
+    border-radius: 5px;
+    font-size: 0.95em;
+    color: black;
+    background-color: #fff;
+    appearance: none; /* optional: removes native arrow styles */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    font-family: Arial, sans-serif;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+/* Focus highlight like your text inputs */
+select#priceRange:focus,
+select#productType:focus,
+select#filterPriceRange:focus,
+select#filterProductType:focus {
+    border-color: #b0296b;
+    outline: none;
+}
+
+/* Unified Select Styling (matches placeholder look) */
+select#priceRange,
+select#productType,
+select#filterPriceRange,
+select#filterProductType {
+    padding: 10px;
+    width: 80%;
+    max-width: 400px;
+    border: 2px solid #d63384;
+    border-radius: 5px;
+    font-size: 0.9em;
+    color: black;
+    background-color: #fff;
+    font-family: Arial, sans-serif;
+    margin: 10px 0;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='d63384' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+    padding-right: 40px; /* space for the arrow */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+select#priceRange:focus,
+select#productType:focus,
+select#filterPriceRange:focus,
+select#filterProductType:focus {
+    border-color: #b0296b;
+    outline: none;
+}
+
+/* Filter container beneath share/hide buttons */
+.filters {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 60px auto 20px;
+    padding: 10px;
+}
+
+/* Stack dropdowns */
+.filter-selects {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
+/* Center the filter button */
+.filter-btn {
+    margin-top: 15px;
+    width: fit-content;
+}
+

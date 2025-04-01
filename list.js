@@ -186,43 +186,46 @@ function addLink() {
     let link = document.getElementById('linkInput').value.trim();
     const text = document.getElementById('textInput').value.trim();
     let price = document.getElementById('priceInput').value.trim();
-    
+
+    const priceRange = document.getElementById("priceRange").value;
+    const productType = document.getElementById("productType").value;
+
     if (!link) {
         alert("Please enter a valid link.");
         return;
     }
-    
+
     // Ensure link has proper protocol
     if (!link.startsWith('http://') && !link.startsWith('https://')) {
         link = 'https://' + link;
     }
-    
+
     // Format price
     price = formatPrice(price);
-    
+
     const listItem = document.createElement('li');
-    
+
     // Create link element
     const linkElement = document.createElement('a');
     linkElement.href = link;
     linkElement.target = "_blank";
     linkElement.textContent = text || link;
-    
+
     // Create price span
     const priceSpan = document.createElement('span');
     priceSpan.className = 'item-price';
     priceSpan.textContent = price;
-    
+
     // Create edit button
     const editButton = document.createElement('button');
     editButton.className = 'edit-btn';
-    editButton.innerHTML = '&#9998;'; // Pencil icon
+    editButton.innerHTML = '&#9998;';
     editButton.onclick = function() {
         const listItem = this.parentElement;
         const index = Array.from(listItem.parentNode.children).indexOf(listItem);
         createEditModal(listItem, index);
     };
-    
+
     // Create delete button
     const deleteButton = document.createElement('button');
     deleteButton.className = 'delete-btn';
@@ -230,15 +233,15 @@ function addLink() {
     deleteButton.onclick = function() {
         deleteItem(this);
     };
-    
+
     // Create purchase toggle button
     const purchaseButton = document.createElement('button');
     purchaseButton.className = 'purchase-btn';
-    purchaseButton.innerHTML = '&#10004;'; // Checkmark icon
+    purchaseButton.innerHTML = '&#10004;';
     purchaseButton.onclick = function() {
         togglePurchased(this);
     };
-    
+
     // Append all elements to the list item
     listItem.appendChild(linkElement);
     listItem.appendChild(document.createTextNode(' - '));
@@ -246,26 +249,31 @@ function addLink() {
     listItem.appendChild(purchaseButton);
     listItem.appendChild(editButton);
     listItem.appendChild(deleteButton);
-    
+
     document.getElementById('linkList').appendChild(listItem);
-    
-    // Store the item in our tracking array
+
+    //  Store the item AFTER creating and validating
     listItems.push({
-        link: link,
+        link,
         text: text || link,
-        price: price,
-        description: '', // Initialize empty description
-        purchased: false // Add purchased status
+        price,
+        description: '',
+        purchased: false,
+        priceRange,
+        productType
     });
-    
+
     // Update total price
     updateTotal(price);
-    
+
     // Clear input fields
     document.getElementById('linkInput').value = '';
     document.getElementById('textInput').value = '';
     document.getElementById('priceInput').value = '';
+    document.getElementById('priceRange').value = '';
+    document.getElementById('productType').value = '';
 }
+
 
 function togglePurchased(button) {
     const listItem = button.parentElement;
@@ -834,4 +842,75 @@ document.addEventListener('DOMContentLoaded', function() {
             nameEditModal.style.display = 'none';
         }
     });
+
+    document.getElementById("applyFilters").addEventListener("click", applyFilters);
+
 });
+
+function applyFilters() {
+    const selectedPrice = document.getElementById("filterPriceRange").value;
+    const selectedType = document.getElementById("filterProductType").value;
+
+    const filtered = listItems.filter(item => {
+        const matchPrice = !selectedPrice || item.priceRange === selectedPrice;
+        const matchType = !selectedType || item.productType === selectedType;
+        return matchPrice && matchType;
+    });
+
+    renderFilteredItems(filtered);
+}
+
+function renderFilteredItems(filteredItems) {
+    const listContainer = document.getElementById("linkList");
+    listContainer.innerHTML = ''; // Clear list
+
+    filteredItems.forEach((item, index) => {
+        const listItem = document.createElement('li');
+
+        const linkElement = document.createElement('a');
+        linkElement.href = item.link;
+        linkElement.target = "_blank";
+        linkElement.textContent = item.text;
+
+        const priceSpan = document.createElement('span');
+        priceSpan.className = 'item-price';
+        priceSpan.textContent = item.price;
+
+        const tagSpan = document.createElement('span');
+        tagSpan.style.fontSize = "0.9em";
+        tagSpan.style.marginLeft = "10px";
+        tagSpan.style.color = "#777";
+        tagSpan.textContent = `[${item.priceRange || "Any"} | ${item.productType || "Any"}]`;
+
+        const purchaseButton = document.createElement('button');
+        purchaseButton.className = 'purchase-btn';
+        purchaseButton.innerHTML = '&#10004;';
+        purchaseButton.onclick = function () {
+            togglePurchased(this);
+        };
+
+        const editButton = document.createElement('button');
+        editButton.className = 'edit-btn';
+        editButton.innerHTML = '&#9998;';
+        editButton.onclick = function () {
+            createEditModal(listItem, index);
+        };
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-btn';
+        deleteButton.textContent = 'X';
+        deleteButton.onclick = function () {
+            deleteItem(this);
+        };
+
+        listItem.appendChild(linkElement);
+        listItem.appendChild(document.createTextNode(' - '));
+        listItem.appendChild(priceSpan);
+        listItem.appendChild(tagSpan);
+        listItem.appendChild(purchaseButton);
+        listItem.appendChild(editButton);
+        listItem.appendChild(deleteButton);
+
+        listContainer.appendChild(listItem);
+    });
+}
