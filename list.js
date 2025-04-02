@@ -33,6 +33,17 @@ function updateTotal(price, isAddition = true) {
     document.getElementById('totalPrice').innerText = `Total: $${total.toFixed(2)}`;
 }
 
+// Derive price range string from numeric price
+function getPriceRange(priceString) {
+    const value = parseFloat(priceString.replace(/[^0-9.]/g, ''));
+    if (isNaN(value)) return "Unknown";
+
+    if (value < 25) return "$0–25";
+    if (value < 50) return "$25–50";
+    if (value < 100) return "$50–100";
+    return "$100+";
+}
+
 function deleteItem(element) {
     // Extract the price from the list item
     const listItem = element.parentElement;
@@ -187,7 +198,6 @@ function addLink() {
     const text = document.getElementById('textInput').value.trim();
     let price = document.getElementById('priceInput').value.trim();
 
-    const priceRange = document.getElementById("priceRange").value;
     const productType = document.getElementById("productType").value;
 
     if (!link) {
@@ -259,9 +269,8 @@ function addLink() {
         price,
         description: '',
         purchased: false,
-        priceRange,
         productType
-    });
+    });    
 
     // Update total price
     updateTotal(price);
@@ -852,8 +861,9 @@ function applyFilters() {
     const selectedType = document.getElementById("filterProductType").value;
 
     const filtered = listItems.filter(item => {
-        const matchPrice = !selectedPrice || item.priceRange === selectedPrice;
-        const matchType = !selectedType || item.productType === selectedType;
+        const priceRange = getPriceRange(item.price);
+        const matchPrice = !selectedPrice || selectedPrice === "" || priceRange === selectedPrice;
+        const matchType = !selectedType || selectedType === "" || item.productType === selectedType;
         return matchPrice && matchType;
     });
 
@@ -875,13 +885,7 @@ function renderFilteredItems(filteredItems) {
         const priceSpan = document.createElement('span');
         priceSpan.className = 'item-price';
         priceSpan.textContent = item.price;
-
-        const tagSpan = document.createElement('span');
-        tagSpan.style.fontSize = "0.9em";
-        tagSpan.style.marginLeft = "10px";
-        tagSpan.style.color = "#777";
-        tagSpan.textContent = `[${item.priceRange || "Any"} | ${item.productType || "Any"}]`;
-
+        
         const purchaseButton = document.createElement('button');
         purchaseButton.className = 'purchase-btn';
         purchaseButton.innerHTML = '&#10004;';
@@ -906,7 +910,6 @@ function renderFilteredItems(filteredItems) {
         listItem.appendChild(linkElement);
         listItem.appendChild(document.createTextNode(' - '));
         listItem.appendChild(priceSpan);
-        listItem.appendChild(tagSpan);
         listItem.appendChild(purchaseButton);
         listItem.appendChild(editButton);
         listItem.appendChild(deleteButton);
