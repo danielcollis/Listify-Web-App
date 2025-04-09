@@ -33,6 +33,18 @@ function updateTotal(price, isAddition = true) {
     document.getElementById('totalPrice').innerText = `Total: $${total.toFixed(2)}`;
 }
 
+
+// Derive price range string from numeric price
+function getPriceRange(priceString) {
+    const value = parseFloat(priceString.replace(/[^0-9.]/g, ''));
+    if (isNaN(value)) return "Unknown";
+
+    if (value < 25) return "$0–25";
+    if (value < 50) return "$25–50";
+    if (value < 100) return "$50–100";
+    return "$100+";
+}
+
 function deleteItem(element) {
     // Extract the price from the list item
     const listItem = element.parentElement;
@@ -64,14 +76,29 @@ function deleteItem(element) {
 }
 
 function createEditModal(listItem, itemIndex) {
+    // Find the actual index in the listItems array that corresponds to this DOM element
+    const linkElement = listItem.querySelector('a');
+    const priceSpan = listItem.querySelector('.item-price');
+    
+    // Find the correct item in listItems
+    const actualIndex = listItems.findIndex(item => 
+        item.text === linkElement.textContent && 
+        item.price === priceSpan.textContent
+    );
+    
+    if (actualIndex === -1) {
+        console.error("Item not found in listItems array");
+        return;
+    }
+    
     // Create edit modal for name and price
     const modal = document.createElement('div');
     modal.className = 'description-modal';
     modal.innerHTML = `
         <div class="description-modal-content">
             <h3>Edit Item</h3>
-            <input type="text" id="editNameInput" placeholder="Item name" value="${listItems[itemIndex].text}">
-            <input type="text" id="editPriceInput" placeholder="Item price" value="${listItems[itemIndex].price}">
+            <input type="text" id="editNameInput" placeholder="Item name" value="${listItems[actualIndex].text}">
+            <input type="text" id="editPriceInput" placeholder="Item price" value="${listItems[actualIndex].price}">
             <div class="modal-buttons">
                 <button id="saveEditBtn">Save</button>
                 <button id="cancelEditBtn">Cancel</button>
@@ -140,11 +167,11 @@ function createEditModal(listItem, itemIndex) {
         const formattedPrice = formatPrice(newPrice);
         
         // Get current price for comparison
-        const oldPrice = listItems[itemIndex].price;
+        const oldPrice = listItems[actualIndex].price;
         
         // Update the item in our tracking array
-        listItems[itemIndex].text = newName;
-        listItems[itemIndex].price = formattedPrice;
+        listItems[actualIndex].text = newName;
+        listItems[actualIndex].price = formattedPrice;
         
         // Update the displayed item
         const linkEl = listItem.querySelector('a');
@@ -154,7 +181,7 @@ function createEditModal(listItem, itemIndex) {
         priceEl.textContent = formattedPrice;
         
         // Update the total price
-        if (oldPrice !== formattedPrice && !listItems[itemIndex].purchased) {
+        if (oldPrice !== formattedPrice && !listItems[actualIndex].purchased) {
             // Subtract old price and add new price
             if (oldPrice) updateTotal(oldPrice, false);
             if (formattedPrice) updateTotal(formattedPrice, true);
@@ -187,7 +214,6 @@ function addLink() {
     const text = document.getElementById('textInput').value.trim();
     let price = document.getElementById('priceInput').value.trim();
 
-    const priceRange = document.getElementById("priceRange").value;
     const productType = document.getElementById("productType").value;
 
     if (!link) {
@@ -203,7 +229,22 @@ function addLink() {
     // Format price
     price = formatPrice(price);
 
+    // First add the item to our tracking array - IMPORTANT: Do this BEFORE creating the DOM elements
+    const newItem = {
+        link,
+        text: text || link,
+        price,
+        description: '',
+        purchased: false,
+        productType
+    };
+    
+    // Add to listItems array
+    listItems.push(newItem);
+    const currentIndex = listItems.length - 1;
+
     const listItem = document.createElement('li');
+    listItem.setAttribute('data-item-index', currentIndex);
 
     // Create link element
     const linkElement = document.createElement('a');
@@ -221,9 +262,7 @@ function addLink() {
     editButton.className = 'edit-btn';
     editButton.innerHTML = '&#9998;';
     editButton.onclick = function() {
-        const listItem = this.parentElement;
-        const index = Array.from(listItem.parentNode.children).indexOf(listItem);
-        createEditModal(listItem, index);
+        createEditModal(this.parentElement, currentIndex);
     };
 
     // Create delete button
@@ -252,17 +291,6 @@ function addLink() {
 
     document.getElementById('linkList').appendChild(listItem);
 
-    //  Store the item AFTER creating and validating
-    listItems.push({
-        link,
-        text: text || link,
-        price,
-        description: '',
-        purchased: false,
-        priceRange,
-        productType
-    });
-
     // Update total price
     updateTotal(price);
 
@@ -277,13 +305,27 @@ function addLink() {
 
 function togglePurchased(button) {
     const listItem = button.parentElement;
-    const index = Array.from(listItem.parentNode.children).indexOf(listItem);
+    
+    // Get the link and price elements for this item
+    const linkElement = listItem.querySelector('a');
+    const priceElement = listItem.querySelector('.item-price');
+    
+    // Find the matching item in our array
+    const index = listItems.findIndex(item => 
+        item.text === linkElement.textContent && 
+        item.price === priceElement.textContent
+    );
+    
+    if (index === -1) {
+        console.error("Could not find item in list items array");
+        return;
+    }
     
     // Toggle purchased status
     listItems[index].purchased = !listItems[index].purchased;
     
     // Get price for this item
-    const priceText = listItem.querySelector('.item-price').textContent;
+    const priceText = priceElement.textContent;
     
     if (listItems[index].purchased) {
         // Mark as purchased
@@ -557,63 +599,109 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Check if there's a list in the URL when page loads
-    const urlParams = new URLSearchParams(window.location.search);
-    const encodedList = urlParams.get('list');
-    
-    if (encodedList) {
-        try {
-            const decodedData = decodeURIComponent(atob(encodedList));
-            const loadedData = JSON.parse(decodedData);
-            const loadedItems = loadedData.items || [];
-            const loadedFunds = loadedData.funds || [];
-            const loadedName = loadedData.name || "My Wishlist"
+    // Check if there's a list in the URL when page loads
+const urlParams = new URLSearchParams(window.location.search);
+const encodedList = urlParams.get('list');
 
-            //Update the wishlist name
-            updateWishlistName(loadedName)
+if (encodedList) {
+    try {
+        const decodedData = decodeURIComponent(atob(encodedList));
+        const loadedData = JSON.parse(decodedData);
+        const loadedItems = loadedData.items || [];
+        const loadedFunds = loadedData.funds || [];
+        const loadedName = loadedData.name || "My Wishlist"
+
+        //Update the wishlist name
+        updateWishlistName(loadedName)
+        
+        // Clear existing list
+        document.getElementById('linkList').innerHTML = '';
+        total = 0;
+        
+        // Set the listItems array directly instead of recreating items one by one
+        listItems = [...loadedItems];
+        fundItems = [];
+        
+        // Recreate the DOM elements for each item
+        listItems.forEach((item, index) => {
+            const listItem = document.createElement('li');
+            listItem.setAttribute('data-item-index', index);
+
+            // Create link element
+            const linkElement = document.createElement('a');
+            linkElement.href = item.link;
+            linkElement.target = "_blank";
+            linkElement.textContent = item.text || item.link;
+
+            // Create price span
+            const priceSpan = document.createElement('span');
+            priceSpan.className = 'item-price';
+            priceSpan.textContent = item.price;
             
-            // Clear existing list
-            document.getElementById('linkList').innerHTML = '';
-            total = 0;
-            listItems = [];
-            fundItems = [];
+            // Add price to total if not purchased
+            if (!item.purchased) {
+                updateTotal(item.price);
+            }
+
+            // Create edit button
+            const editButton = document.createElement('button');
+            editButton.className = 'edit-btn';
+            editButton.innerHTML = '&#9998;';
+            editButton.onclick = function() {
+                createEditModal(this.parentElement, index);
+            };
+
+            // Create delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-btn';
+            deleteButton.textContent = 'X';
+            deleteButton.onclick = function() {
+                deleteItem(this);
+            };
+
+            // Create purchase toggle button
+            const purchaseButton = document.createElement('button');
+            purchaseButton.className = 'purchase-btn';
+            purchaseButton.innerHTML = '&#10004;';
+            purchaseButton.onclick = function() {
+                togglePurchased(this);
+            };
+
+            // Append all elements to the list item
+            listItem.appendChild(linkElement);
+            listItem.appendChild(document.createTextNode(' - '));
+            listItem.appendChild(priceSpan);
+            listItem.appendChild(purchaseButton);
+            listItem.appendChild(editButton);
+            listItem.appendChild(deleteButton);
             
-            // Recreate list items
-            loadedItems.forEach(item => {
-                // Set input values
-                document.getElementById('linkInput').value = item.link;
-                document.getElementById('textInput').value = item.text;
-                document.getElementById('priceInput').value = item.price;
-                
-                // Trigger add link to recreate the item
-                addLink();
-                
-                // Restore purchased status if applicable
-                if (item.purchased) {
-                    const lastAddedItem = document.getElementById('linkList').lastChild;
-                    const purchaseButton = lastAddedItem.querySelector('.purchase-btn');
-                    togglePurchased(purchaseButton);
-                }
-            });
+            // Apply purchased class if needed
+            if (item.purchased) {
+                listItem.classList.add('purchased-item');
+            }
 
-            // Recreate fund items
-            loadedFunds.forEach((fund, index) => {
-                // Ensure the fund has a contributed property (for backward compatibility)
-                if (fund.contributed === undefined) {
-                    fund.contributed = 0;
-                }
-                
-                createFundElement(fund, index);
-                fundItems.push(fund);
-                
-                // Add the remaining amount (goal - contributed) to the total
-                const remainingAmount = fund.goal - fund.contributed;
-                updateTotal(`$${remainingAmount.toFixed(2)}`);
-            });
+            document.getElementById('linkList').appendChild(listItem);
+        });
 
-        } catch (error) {
-            console.error('Error loading shared list:', error);
-        }
+        // Recreate fund items
+        loadedFunds.forEach((fund, index) => {
+            // Ensure the fund has a contributed property (for backward compatibility)
+            if (fund.contributed === undefined) {
+                fund.contributed = 0;
+            }
+            
+            createFundElement(fund, index);
+            fundItems.push(fund);
+            
+            // Add the remaining amount (goal - contributed) to the total
+            const remainingAmount = fund.goal - fund.contributed;
+            updateTotal(`$${remainingAmount.toFixed(2)}`);
+        });
+
+    } catch (error) {
+        console.error('Error loading shared list:', error);
     }
+}
 
     // Toggle side menu when hamburger icon is clicked
     document.getElementById("menuToggle").addEventListener("click", function() {
@@ -852,8 +940,9 @@ function applyFilters() {
     const selectedType = document.getElementById("filterProductType").value;
 
     const filtered = listItems.filter(item => {
-        const matchPrice = !selectedPrice || item.priceRange === selectedPrice;
-        const matchType = !selectedType || item.productType === selectedType;
+        const priceRange = getPriceRange(item.price);
+        const matchPrice = !selectedPrice || selectedPrice === "" || priceRange === selectedPrice;
+        const matchType = !selectedType || selectedType === "" || item.productType === selectedType;
         return matchPrice && matchType;
     });
 
@@ -875,13 +964,7 @@ function renderFilteredItems(filteredItems) {
         const priceSpan = document.createElement('span');
         priceSpan.className = 'item-price';
         priceSpan.textContent = item.price;
-
-        const tagSpan = document.createElement('span');
-        tagSpan.style.fontSize = "0.9em";
-        tagSpan.style.marginLeft = "10px";
-        tagSpan.style.color = "#777";
-        tagSpan.textContent = `[${item.priceRange || "Any"} | ${item.productType || "Any"}]`;
-
+        
         const purchaseButton = document.createElement('button');
         purchaseButton.className = 'purchase-btn';
         purchaseButton.innerHTML = '&#10004;';
@@ -906,7 +989,6 @@ function renderFilteredItems(filteredItems) {
         listItem.appendChild(linkElement);
         listItem.appendChild(document.createTextNode(' - '));
         listItem.appendChild(priceSpan);
-        listItem.appendChild(tagSpan);
         listItem.appendChild(purchaseButton);
         listItem.appendChild(editButton);
         listItem.appendChild(deleteButton);
