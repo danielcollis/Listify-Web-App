@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listify - Login</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="login-container">
+            <h1 class="app-title">Listify</h1>
+
+            <!-- Login Form -->
+            <div class="form-container" id="login-form">
+                <h2>Login</h2>
+                <div class="input-group">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
+                <button id="login-button" class="btn">Login</button>
+                <div class="form-footer">
+                    <p>Don't have an account? <a href="#" id="show-register">Register</a></p>
+                    <p><a href="#" id="forgot-password">Forgot Password?</a></p>
+                </div>
+                <div class="error-message" id="login-error"></div>
+            </div>
+
+            <!-- Register Form -->
+            <div class="form-container" id="register-form" style="display: none;">
+                <h2>Create Account</h2>
+                <div class="input-group">
+                    <input type="text" id="register-name" placeholder="Full Name" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="register-email" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="register-password" placeholder="Password" required>
+                    <div class="password-requirements">
+                        Password must be at least 8 characters long with 1 uppercase letter, 
+                        1 lowercase letter, 1 number, and 1 special character.
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
+                </div>
+                <button id="register-button" class="btn">Register</button>
+                <div class="form-footer">
+                    <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+                </div>
+                <div class="error-message" id="register-error"></div>
+            </div>
+
+            <!-- Reset Password Form -->
+            <div class="form-container" id="reset-form" style="display: none;">
+                <h2>Reset Password</h2>
+                <div class="input-group">
+                    <input type="email" id="reset-email" placeholder="Email" required>
+                </div>
+                <button id="reset-button" class="btn">Send Reset Link</button>
+                <div class="form-footer">
+                    <p><a href="#" id="back-to-login">Back to Login</a></p>
+                </div>
+                <div id="reset-message" class="success-message"></div>
+            </div>
+        </div>
+
+        <!-- Local Storage Disclaimer -->
+        <div class="form-footer">
+            <p><strong>Note:</strong> All data is currently stored locally in the browser and will not be saved permanently.</p>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>
