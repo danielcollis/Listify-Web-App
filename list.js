@@ -712,6 +712,16 @@ if (encodedList) {
             menu.style.width = "250px"; // Open the menu
         }
     });
+    //Login button functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const logoutBtn = document.getElementById('logoutButton');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function () {
+                localStorage.removeItem('listify_current_user');
+                window.location.href = 'Login/login.html'; // Adjust path if needed
+            });
+        }
+    });
     
     // Add Fund Functionality
     const fundNameInput = document.createElement("input");

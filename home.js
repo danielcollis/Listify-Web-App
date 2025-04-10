@@ -31,4 +31,23 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("openSharedList").click();
         }
     });
+    // Toggle side menu when hamburger icon is clicked
+    document.getElementById("menuToggle").addEventListener("click", function() {
+    let menu = document.getElementById("sideMenu");
+    if (menu.style.width === "250px") {
+        menu.style.width = "0"; // Close the menu
+    } else {
+        menu.style.width = "250px"; // Open the menu
+        }
+    });
+    //Login button functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const logoutBtn = document.getElementById('logoutButton');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function () {
+                localStorage.removeItem('listify_current_user');
+                window.location.href = 'Login/login.html'; // Adjust path if needed
+            });
+        }
+    });
 });

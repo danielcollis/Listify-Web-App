@@ -61,3 +61,69 @@ p {
     border-radius: 0 5px 5px 0;
     padding: 10px 20px;
 }
+
+
+
+.side-menu {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #f8d7da;
+    overflow-x: hidden;
+    transition: 0.3s;
+    padding-top: 60px;
+}
+
+.side-menu button {
+    background-color: #d63384;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 10px;
+    text-align: left;
+    width: 200px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 40px;
+}
+
+.side-menu button:hover {
+    background-color: #b0296b;
+}
+
+.home-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 18px;
+    background-color: #d63384;
+    padding: 10px;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.home-button a {
+    color: white;
+    text-decoration: none;
+}
+
+.home-button:hover {
+    background-color: #b0296b;
+}
+
+#menuToggle {
+    font-size: 30px;
+    cursor: pointer;
+    padding: 15px;
+    background-color: #d63384;
+    color: white;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    border-radius: 5px;
+}

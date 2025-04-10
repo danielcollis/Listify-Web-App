@@ -113,7 +113,7 @@ li a:hover {
     background-color: #d63384;
 }
 
-.menu-toggle {
+#menuToggle {
     font-size: 30px;
     cursor: pointer;
     padding: 15px;
@@ -124,8 +124,8 @@ li a:hover {
     left: 20px;
     z-index: 1000;
     border-radius: 5px;
-    margin-left: 15px;
 }
+
 
 .side-menu {
     height: 100%;
