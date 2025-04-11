@@ -1,3 +1,84 @@
+// Import Firebase modules
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-analytics.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDwkNR4FXq2fZ-FnomEYRkZ9WTwk5k9G48",
+    authDomain: "listify-f2df0.firebaseapp.com",
+    projectId: "listify-f2df0",
+    storageBucket: "listify-f2df0.appspot.com",
+    messagingSenderId: "444295301374",
+    appId: "1:444295301374:web:73f8519bb4fac1c340bdaf",
+    measurementId: "G-QEYWCMTXEL"
+  };
+  
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getFirestore(app);  
+
+  import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+async function loadItemsFromFirestore() {
+    const querySnapshot = await getDocs(collection(db, "wishlistItems"));
+    querySnapshot.forEach((docSnap) => {
+        const item = docSnap.data();
+        listItems.push(item);
+
+        // Recreate the DOM element
+        const currentIndex = listItems.length - 1;
+        const listItem = document.createElement('li');
+        listItem.setAttribute('data-item-index', currentIndex);
+
+        const linkElement = document.createElement('a');
+        linkElement.href = item.link;
+        linkElement.target = "_blank";
+        linkElement.textContent = item.text;
+
+        const priceSpan = document.createElement('span');
+        priceSpan.className = 'item-price';
+        priceSpan.textContent = item.price;
+
+        const editButton = document.createElement('button');
+        editButton.className = 'edit-btn';
+        editButton.innerHTML = '&#9998;';
+        editButton.onclick = function () {
+            createEditModal(listItem, currentIndex);
+        };
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-btn';
+        deleteButton.textContent = 'X';
+        deleteButton.onclick = function () {
+            deleteItem(this);
+        };
+
+        const purchaseButton = document.createElement('button');
+        purchaseButton.className = 'purchase-btn';
+        purchaseButton.innerHTML = '&#10004;';
+        purchaseButton.onclick = function () {
+            togglePurchased(this);
+        };
+
+        listItem.appendChild(linkElement);
+        listItem.appendChild(document.createTextNode(' - '));
+        listItem.appendChild(priceSpan);
+        listItem.appendChild(purchaseButton);
+        listItem.appendChild(editButton);
+        listItem.appendChild(deleteButton);
+
+        document.getElementById('linkList').appendChild(listItem);
+
+        if (!item.purchased) {
+            updateTotal(item.price);
+        } else {
+            listItem.classList.add('purchased-item');
+        }
+    });
+}
+
+
 let total = 0;
 let listItems = []; // Array to store list items
 let fundItems = []; // Array to store fund items
@@ -43,6 +124,17 @@ function getPriceRange(priceString) {
     if (value < 50) return "$25–50";
     if (value < 100) return "$50–100";
     return "$100+";
+}
+
+// Save a single wishlist item to Firestore
+async function saveItemToFirestore(item) {
+    try {
+        const docRef = doc(db, "wishlistItems", `${Date.now()}_${Math.random().toString(36).substring(2, 10)}`);
+        await setDoc(docRef, item);
+        console.log("Item saved to Firestore:", item);
+    } catch (error) {
+        console.error("Error saving item to Firestore:", error);
+    }
 }
 
 function deleteItem(element) {
@@ -241,6 +333,7 @@ function addLink() {
     
     // Add to listItems array
     listItems.push(newItem);
+    saveItemToFirestore(newItem); // ← Add this line right after the push
     const currentIndex = listItems.length - 1;
 
     const listItem = document.createElement('li');
@@ -483,6 +576,9 @@ function updateWishlistName(name) {
 
 // Event listeners for Enter key on input fields
 document.addEventListener('DOMContentLoaded', function() {
+    loadItemsFromFirestore();
+    document.getElementById("addLinkBtn").addEventListener("click", addLink);
+
     // Add styles for fund elements
     const fundStyles = document.createElement('style');
     fundStyles.textContent = `

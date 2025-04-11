@@ -41,7 +41,8 @@
             <!-- Add more categories as needed -->
           </select>
 
-        <button onclick="addLink()">Add</button>
+        <button id="addLinkBtn">Add</button>
+
     </div>
     
     <!-- Share Button -->
@@ -99,7 +100,26 @@
     <ul id="linkList"></ul>
     
     <h2 id="totalPrice">Total: $0.00</h2>
+
+    <script type="module">
+    // Your Firebase config object
+    const firebaseConfig = {
+        apiKey: "AIzaSyDwkNR4FXq2fZ-FnomEYRkZ9WTwk5k9G48",
+        authDomain: "listify-f2df0.firebaseapp.com",
+        projectId: "listify-f2df0",
+        storageBucket: "listify-f2df0.appspot.com",
+        messagingSenderId: "444295301374",
+        appId: "1:444295301374:web:73f8519bb4fac1c340bdaf",
+        measurementId: "G-QEYWCMTXEL"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    </script>
     
-    <script src="list.js"></script>
+    <script type="module" src="list.js"></script>
 </body>
 </html>
