@@ -391,7 +391,7 @@ function addLink() {
     document.getElementById('linkInput').value = '';
     document.getElementById('textInput').value = '';
     document.getElementById('priceInput').value = '';
-    document.getElementById('priceRange').value = '';
+    //document.getElementById('priceRange').value = '';
     document.getElementById('productType').value = '';
 }
 
