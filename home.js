@@ -50,4 +50,16 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
+
+    //My Wishlists button functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const wishlistsBtn = document.getElementById('wishlistsButton');
+        if (wishlistsBtn) {
+            wishlistsBtn.addEventListener('click', function () {
+                window.location.href = 'wishlists.html';
+            });
+        }
+    });
+    
+
 });

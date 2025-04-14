@@ -818,6 +818,17 @@ if (encodedList) {
             });
         }
     });
+
+    //My Wishlists button funcationality
+    document.addEventListener('DOMContentLoaded', function () {
+        const wishlistsBtn = document.getElementById('wishlistsButton');
+        if (wishlistsBtn) {
+            wishlistsBtn.addEventListener('click', function () {
+                window.location.href = 'wishlists.html';
+            });
+        }
+    });
+    
     
     // Add Fund Functionality
     const fundNameInput = document.createElement("input");
