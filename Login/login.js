@@ -21,22 +21,45 @@ document.addEventListener('DOMContentLoaded', function() {
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
 
-  // Handle Login
-  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  // ======= DOM ELEMENTS (needed for registration & form logic) =======
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const resetForm = document.getElementById("reset-form");
+
+  const loginEmail = document.getElementById("loginEmail");
+  const loginPassword = document.getElementById("loginPassword");
+  const loginError = document.getElementById("login-error");
+
+  const registerEmail = document.getElementById("registerEmail");
+  const registerPassword = document.getElementById("registerPassword");
+  const registerConfirmPassword = document.getElementById("registerConfirmPassword");
+  const registerError = document.getElementById("register-error");
+
+  const resetEmail = document.getElementById("reset-email");
+  const resetMessage = document.getElementById("reset-message");
+  const resetButton = document.getElementById("reset-button");
+
+  const showRegister = document.getElementById("show-register");
+  const showLogin = document.getElementById("show-login");
+  const forgotPassword = document.getElementById("forgot-password");
+  const backToLogin = document.getElementById("back-to-login");
+
+  // ======= Handle Login =======
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
+    const email = loginEmail.value;
+    const password = loginPassword.value;
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
       window.location.href = "../home.html"; // Redirect to home
     } catch (error) {
-      alert("Login failed: " + error.message);
+      loginError.textContent = "Login failed: " + error.message;
     }
   });
 
-  // Handle Registration
-  document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  // ======= Handle Registration =======
+  registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = registerEmail.value.trim();
     const password = registerPassword.value.trim();
@@ -64,13 +87,13 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       alert("Registration successful! You can now log in.");
-      showLogin.click();
+      showLogin.click(); // Switch to login form
     } catch (error) {
       registerError.textContent = "Registration failed: " + error.message;
     }
   });
 
-  // Handle Password Reset
+  // ======= Handle Password Reset =======
   resetButton.addEventListener('click', async () => {
     const email = resetEmail.value.trim();
     resetMessage.textContent = '';
@@ -97,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // UI: Toggle form views
+  // ======= UI: Toggle Form Views =======
   showRegister.addEventListener('click', function(e) {
     e.preventDefault();
     loginForm.style.display = 'none';
@@ -130,19 +153,19 @@ document.addEventListener('DOMContentLoaded', function() {
     clearAllFields();
   });
 
-  // Helper: Validate email
+  // ======= Helper: Email Validation =======
   function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  // Helper: Validate password strength
+  // ======= Helper: Password Validation =======
   function isValidPassword(password) {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return passwordRegex.test(password);
   }
 
-  // Helper: Clear all form fields and errors
+  // ======= Helper: Clear All Form Fields and Errors =======
   function clearAllFields() {
     loginEmail.value = '';
     loginPassword.value = '';
@@ -157,10 +180,9 @@ document.addEventListener('DOMContentLoaded', function() {
     resetMessage.textContent = '';
   }
 
-  // Optional: Redirect to home if already logged in
+  // Optional: Automatically redirect if already logged in
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // Already logged in
       console.log("User is already signed in.");
     }
   });
