@@ -1,7 +1,8 @@
 // Import Firebase modules
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc, query, where, addDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-analytics.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -16,68 +17,291 @@ const firebaseConfig = {
   
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
-  const db = getFirestore(app);  
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  
+  // Track current wishlist ID
+  let currentWishlistId = null;
+  let currentUserId = null;
 
-  import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+// Check if this is a new list or a shared list
+async function initializeWishlist() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const encodedList = urlParams.get('list');
+    
+    // If there's a shared list, just display it without saving to Firestore
+    if (encodedList) {
+        try {
+            const decodedData = decodeURIComponent(atob(encodedList));
+            const loadedData = JSON.parse(decodedData);
+            displaySharedList(loadedData);
+            return;
+        } catch (error) {
+            console.error('Error loading shared list:', error);
+        }
+    }
 
-async function loadItemsFromFirestore() {
-    const querySnapshot = await getDocs(collection(db, "wishlistItems"));
-    querySnapshot.forEach((docSnap) => {
-        const item = docSnap.data();
-        listItems.push(item);
-
-        // Recreate the DOM element
-        const currentIndex = listItems.length - 1;
-        const listItem = document.createElement('li');
-        listItem.setAttribute('data-item-index', currentIndex);
-
-        const linkElement = document.createElement('a');
-        linkElement.href = item.link;
-        linkElement.target = "_blank";
-        linkElement.textContent = item.text;
-
-        const priceSpan = document.createElement('span');
-        priceSpan.className = 'item-price';
-        priceSpan.textContent = item.price;
-
-        const editButton = document.createElement('button');
-        editButton.className = 'edit-btn';
-        editButton.innerHTML = '&#9998;';
-        editButton.onclick = function () {
-            createEditModal(listItem, currentIndex);
-        };
-
-        const deleteButton = document.createElement('button');
-        deleteButton.className = 'delete-btn';
-        deleteButton.textContent = 'X';
-        deleteButton.onclick = function () {
-            deleteItem(this);
-        };
-
-        const purchaseButton = document.createElement('button');
-        purchaseButton.className = 'purchase-btn';
-        purchaseButton.innerHTML = '&#10004;';
-        purchaseButton.onclick = function () {
-            togglePurchased(this);
-        };
-
-        listItem.appendChild(linkElement);
-        listItem.appendChild(document.createTextNode(' - '));
-        listItem.appendChild(priceSpan);
-        listItem.appendChild(purchaseButton);
-        listItem.appendChild(editButton);
-        listItem.appendChild(deleteButton);
-
-        document.getElementById('linkList').appendChild(listItem);
-
-        if (!item.purchased) {
-            updateTotal(item.price);
+    // Check if user is authenticated
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUserId = user.uid;
+            
+            // Check if an existing wishlist ID was passed
+            const wishlistId = urlParams.get('id');
+            if (wishlistId) {
+                currentWishlistId = wishlistId;
+                await loadWishlistItems(wishlistId);
+            } else {
+                // Create a new wishlist
+                await createNewWishlist();
+            }
         } else {
-            listItem.classList.add('purchased-item');
+            // Not logged in, redirect to login
+            window.location.href = "Login/login.html";
         }
     });
 }
 
+// Create a new empty wishlist
+async function createNewWishlist() {
+    try {
+        // Create a new wishlist document
+        const wishlistRef = await addDoc(collection(db, "wishlists"), {
+            userId: currentUserId,
+            name: "My Wishlist",
+            created: new Date(),
+            lastModified: new Date()
+        });
+        
+        currentWishlistId = wishlistRef.id;
+        updateWishlistName("My Wishlist");
+        
+        // Clear the UI since this is a new list
+        document.getElementById('linkList').innerHTML = '';
+        listItems = [];
+        fundItems = [];
+        total = 0;
+        document.getElementById('totalPrice').innerText = `Total: $0.00`;
+        
+        // Update URL to include the wishlist ID (without reloading)
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('id', currentWishlistId);
+        window.history.pushState({}, '', newUrl);
+        
+    } catch (error) {
+        console.error("Error creating new wishlist:", error);
+    }
+}
+
+// Load items for a specific wishlist
+async function loadWishlistItems(wishlistId) {
+    try {
+        // Clear existing items
+        listItems = [];
+        fundItems = [];
+        total = 0;
+        document.getElementById('linkList').innerHTML = '';
+        document.getElementById('totalPrice').innerText = `Total: $0.00`;
+        
+        // Get the wishlist document to retrieve the name
+        const wishlistDoc = await getDoc(doc(db, "wishlists", wishlistId));
+        if (wishlistDoc.exists()) {
+            const wishlistData = wishlistDoc.data();
+            updateWishlistName(wishlistData.name || "My Wishlist");
+            
+            // Verify this wishlist belongs to the current user
+            if (wishlistData.userId !== currentUserId) {
+                alert("You don't have permission to access this wishlist");
+                createNewWishlist();
+                return;
+            }
+        }
+        
+        // Query items belonging to this wishlist
+        const q = query(collection(db, "wishlistItems"), where("wishlistId", "==", wishlistId));
+        const querySnapshot = await getDocs(q);
+        
+        querySnapshot.forEach((docSnap) => {
+            const item = docSnap.data();
+            item.docId = docSnap.id; // Store the document ID for later updates/deletes
+            listItems.push(item);
+            
+            // Create DOM element for the item
+            createItemElement(item, listItems.length - 1);
+            
+            // Update total if not purchased
+            if (!item.purchased) {
+                updateTotal(item.price);
+            }
+        });
+        
+        // Also load fund items if you have those
+        // Similar code would go here
+        
+    } catch (error) {
+        console.error("Error loading wishlist items:", error);
+    }
+}
+
+// Display a shared list without saving to Firestore
+function displaySharedList(loadedData) {
+    // Clear existing list
+    document.getElementById('linkList').innerHTML = '';
+    total = 0;
+    
+    const loadedItems = loadedData.items || [];
+    const loadedFunds = loadedData.funds || [];
+    const loadedName = loadedData.name || "My Wishlist";
+
+    // Update the wishlist name
+    updateWishlistName(loadedName);
+    
+    // Set the listItems array directly instead of recreating items one by one
+    listItems = [...loadedItems];
+    fundItems = [];
+    
+    // Recreate the DOM elements for each item
+    listItems.forEach((item, index) => {
+        createItemElement(item, index);
+        
+        // Add price to total if not purchased
+        if (!item.purchased) {
+            updateTotal(item.price);
+        }
+    });
+
+    // Recreate fund items
+    loadedFunds.forEach((fund, index) => {
+        // Ensure the fund has a contributed property (for backward compatibility)
+        if (fund.contributed === undefined) {
+            fund.contributed = 0;
+        }
+        
+        createFundElement(fund, index);
+        fundItems.push(fund);
+        
+        // Add the remaining amount (goal - contributed) to the total
+        const remainingAmount = fund.goal - fund.contributed;
+        updateTotal(`$${remainingAmount.toFixed(2)}`);
+    });
+}
+
+// Create DOM element for an item (used by both loadWishlistItems and displaySharedList)
+function createItemElement(item, index) {
+    const listItem = document.createElement('li');
+    listItem.setAttribute('data-item-index', index);
+    
+    if (item.docId) {
+        listItem.setAttribute('data-doc-id', item.docId);
+    }
+
+    // Create link element
+    const linkElement = document.createElement('a');
+    linkElement.href = item.link;
+    linkElement.target = "_blank";
+    linkElement.textContent = item.text || item.link;
+
+    // Create price span
+    const priceSpan = document.createElement('span');
+    priceSpan.className = 'item-price';
+    priceSpan.textContent = item.price;
+
+    // Create edit button
+    const editButton = document.createElement('button');
+    editButton.className = 'edit-btn';
+    editButton.innerHTML = '&#9998;';
+    editButton.onclick = function() {
+        createEditModal(this.parentElement, index);
+    };
+
+    // Create delete button
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-btn';
+    deleteButton.textContent = 'X';
+    deleteButton.onclick = function() {
+        deleteItem(this);
+    };
+
+    // Create purchase toggle button
+    const purchaseButton = document.createElement('button');
+    purchaseButton.className = 'purchase-btn';
+    purchaseButton.innerHTML = '&#10004;';
+    purchaseButton.onclick = function() {
+        togglePurchased(this);
+    };
+
+    // Append all elements to the list item
+    listItem.appendChild(linkElement);
+    listItem.appendChild(document.createTextNode(' - '));
+    listItem.appendChild(priceSpan);
+    listItem.appendChild(purchaseButton);
+    listItem.appendChild(editButton);
+    listItem.appendChild(deleteButton);
+    
+    // Apply purchased class if needed
+    if (item.purchased) {
+        listItem.classList.add('purchased-item');
+    }
+
+    document.getElementById('linkList').appendChild(listItem);
+}
+
+// Save a single wishlist item to Firestore
+async function saveItemToFirestore(item) {
+    // Don't save to Firestore if we're viewing a shared list
+    if (!currentWishlistId) return;
+    
+    try {
+        // Add wishlistId to the item
+        item.wishlistId = currentWishlistId;
+        item.userId = currentUserId;
+        
+        const docRef = await addDoc(collection(db, "wishlistItems"), item);
+        console.log("Item saved to Firestore:", item);
+        return docRef.id;
+    } catch (error) {
+        console.error("Error saving item to Firestore:", error);
+    }
+}
+
+// Update an item in Firestore
+async function updateItemInFirestore(docId, updates) {
+    if (!docId) return;
+    
+    try {
+        await updateDoc(doc(db, "wishlistItems", docId), updates);
+        console.log("Item updated in Firestore:", updates);
+    } catch (error) {
+        console.error("Error updating item in Firestore:", error);
+    }
+}
+
+// Delete an item from Firestore
+async function deleteItemFromFirestore(docId) {
+    if (!docId) return;
+    
+    try {
+        await deleteDoc(doc(db, "wishlistItems", docId));
+        console.log("Item deleted from Firestore:", docId);
+    } catch (error) {
+        console.error("Error deleting item from Firestore:", error);
+    }
+}
+
+// Update wishlist name in Firestore
+async function updateWishlistNameInFirestore(name) {
+    if (!currentWishlistId) return;
+    
+    try {
+        await updateDoc(doc(db, "wishlists", currentWishlistId), {
+            name: name,
+            lastModified: new Date()
+        });
+        console.log("Wishlist name updated in Firestore:", name);
+    } catch (error) {
+        console.error("Error updating wishlist name in Firestore:", error);
+    }
+}
 
 let total = 0;
 let listItems = []; // Array to store list items
@@ -126,23 +350,20 @@ function getPriceRange(priceString) {
     return "$100+";
 }
 
-// Save a single wishlist item to Firestore
-async function saveItemToFirestore(item) {
-    try {
-        const docRef = doc(db, "wishlistItems", `${Date.now()}_${Math.random().toString(36).substring(2, 10)}`);
-        await setDoc(docRef, item);
-        console.log("Item saved to Firestore:", item);
-    } catch (error) {
-        console.error("Error saving item to Firestore:", error);
-    }
-}
-
 function deleteItem(element) {
     // Extract the price from the list item
     const listItem = element.parentElement;
     const priceSpan = listItem.querySelector('.item-price');
     const priceText = priceSpan ? priceSpan.textContent : '';
     const linkElement = listItem.querySelector('a');
+    
+    // Get the document ID if available
+    const docId = listItem.getAttribute('data-doc-id');
+    
+    // Also delete from Firestore if we have a document ID
+    if (docId) {
+        deleteItemFromFirestore(docId);
+    }
     
     // Remove trailing slash and compare URLs
     const normalizeUrl = (url) => url.replace(/\/+$/, '');
@@ -163,8 +384,6 @@ function deleteItem(element) {
     
     // Remove the list item
     listItem.remove();
-
-    console.log(listItems);
 }
 
 function createEditModal(listItem, itemIndex) {
@@ -328,61 +547,34 @@ function addLink() {
         price,
         description: '',
         purchased: false,
-        productType
+        productType,
+        dateAdded: new Date().toISOString(),
+        wishlistId: currentWishlistId,
+        userId: currentUserId
     };
     
     // Add to listItems array
     listItems.push(newItem);
-    saveItemToFirestore(newItem); // ← Add this line right after the push
+    
+    // Save to Firestore
+    saveItemToFirestore(newItem).then(docId => {
+        if (docId) {
+            // Store the document ID in the listItems array
+            newItem.docId = docId;
+            
+            // Also update the DOM element with the doc ID
+            const listItems = document.querySelectorAll('#linkList li');
+            if (listItems.length > 0) {
+                const lastItem = listItems[listItems.length - 1];
+                lastItem.setAttribute('data-doc-id', docId);
+            }
+        }
+    });
+    
     const currentIndex = listItems.length - 1;
 
-    const listItem = document.createElement('li');
-    listItem.setAttribute('data-item-index', currentIndex);
-
-    // Create link element
-    const linkElement = document.createElement('a');
-    linkElement.href = link;
-    linkElement.target = "_blank";
-    linkElement.textContent = text || link;
-
-    // Create price span
-    const priceSpan = document.createElement('span');
-    priceSpan.className = 'item-price';
-    priceSpan.textContent = price;
-
-    // Create edit button
-    const editButton = document.createElement('button');
-    editButton.className = 'edit-btn';
-    editButton.innerHTML = '&#9998;';
-    editButton.onclick = function() {
-        createEditModal(this.parentElement, currentIndex);
-    };
-
-    // Create delete button
-    const deleteButton = document.createElement('button');
-    deleteButton.className = 'delete-btn';
-    deleteButton.textContent = 'X';
-    deleteButton.onclick = function() {
-        deleteItem(this);
-    };
-
-    // Create purchase toggle button
-    const purchaseButton = document.createElement('button');
-    purchaseButton.className = 'purchase-btn';
-    purchaseButton.innerHTML = '&#10004;';
-    purchaseButton.onclick = function() {
-        togglePurchased(this);
-    };
-
-    // Append all elements to the list item
-    listItem.appendChild(linkElement);
-    listItem.appendChild(document.createTextNode(' - '));
-    listItem.appendChild(priceSpan);
-    listItem.appendChild(purchaseButton);
-    listItem.appendChild(editButton);
-    listItem.appendChild(deleteButton);
-
-    document.getElementById('linkList').appendChild(listItem);
+    // Create the UI element
+    createItemElement(newItem, currentIndex);
 
     // Update total price
     updateTotal(price);
@@ -391,10 +583,8 @@ function addLink() {
     document.getElementById('linkInput').value = '';
     document.getElementById('textInput').value = '';
     document.getElementById('priceInput').value = '';
-    //document.getElementById('priceRange').value = '';
     document.getElementById('productType').value = '';
 }
-
 
 function togglePurchased(button) {
     const listItem = button.parentElement;
@@ -419,6 +609,12 @@ function togglePurchased(button) {
     
     // Get price for this item
     const priceText = priceElement.textContent;
+    
+    // Also update in Firestore if we have a document ID
+    const docId = listItem.getAttribute('data-doc-id');
+    if (docId) {
+        updateItemInFirestore(docId, { purchased: listItems[index].purchased });
+    }
     
     if (listItems[index].purchased) {
         // Mark as purchased
@@ -572,11 +768,17 @@ function updateWishlistName(name) {
     document.getElementById('wishlistNameHeading').textContent = name;
     // Also update the page title to include the wishlist name
     document.title = `${name} - Listify`;
+    
+    // Update in Firestore if this is a saved wishlist
+    if (currentWishlistId) {
+        updateWishlistNameInFirestore(name);
+    }
 }
 
 // Event listeners for Enter key on input fields
 document.addEventListener('DOMContentLoaded', function() {
-    loadItemsFromFirestore();
+    // Initialize the wishlist
+    initializeWishlist();
     document.getElementById("addLinkBtn").addEventListener("click", addLink);
 
     // Add styles for fund elements
@@ -693,111 +895,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.execCommand('copy');
         alert('Link copied to clipboard!');
     });
-
-    // Check if there's a list in the URL when page loads
-    // Check if there's a list in the URL when page loads
-const urlParams = new URLSearchParams(window.location.search);
-const encodedList = urlParams.get('list');
-
-if (encodedList) {
-    try {
-        const decodedData = decodeURIComponent(atob(encodedList));
-        const loadedData = JSON.parse(decodedData);
-        const loadedItems = loadedData.items || [];
-        const loadedFunds = loadedData.funds || [];
-        const loadedName = loadedData.name || "My Wishlist"
-
-        //Update the wishlist name
-        updateWishlistName(loadedName)
-        
-        // Clear existing list
-        document.getElementById('linkList').innerHTML = '';
-        total = 0;
-        
-        // Set the listItems array directly instead of recreating items one by one
-        listItems = [...loadedItems];
-        fundItems = [];
-        
-        // Recreate the DOM elements for each item
-        listItems.forEach((item, index) => {
-            const listItem = document.createElement('li');
-            listItem.setAttribute('data-item-index', index);
-
-            // Create link element
-            const linkElement = document.createElement('a');
-            linkElement.href = item.link;
-            linkElement.target = "_blank";
-            linkElement.textContent = item.text || item.link;
-
-            // Create price span
-            const priceSpan = document.createElement('span');
-            priceSpan.className = 'item-price';
-            priceSpan.textContent = item.price;
-            
-            // Add price to total if not purchased
-            if (!item.purchased) {
-                updateTotal(item.price);
-            }
-
-            // Create edit button
-            const editButton = document.createElement('button');
-            editButton.className = 'edit-btn';
-            editButton.innerHTML = '&#9998;';
-            editButton.onclick = function() {
-                createEditModal(this.parentElement, index);
-            };
-
-            // Create delete button
-            const deleteButton = document.createElement('button');
-            deleteButton.className = 'delete-btn';
-            deleteButton.textContent = 'X';
-            deleteButton.onclick = function() {
-                deleteItem(this);
-            };
-
-            // Create purchase toggle button
-            const purchaseButton = document.createElement('button');
-            purchaseButton.className = 'purchase-btn';
-            purchaseButton.innerHTML = '&#10004;';
-            purchaseButton.onclick = function() {
-                togglePurchased(this);
-            };
-
-            // Append all elements to the list item
-            listItem.appendChild(linkElement);
-            listItem.appendChild(document.createTextNode(' - '));
-            listItem.appendChild(priceSpan);
-            listItem.appendChild(purchaseButton);
-            listItem.appendChild(editButton);
-            listItem.appendChild(deleteButton);
-            
-            // Apply purchased class if needed
-            if (item.purchased) {
-                listItem.classList.add('purchased-item');
-            }
-
-            document.getElementById('linkList').appendChild(listItem);
-        });
-
-        // Recreate fund items
-        loadedFunds.forEach((fund, index) => {
-            // Ensure the fund has a contributed property (for backward compatibility)
-            if (fund.contributed === undefined) {
-                fund.contributed = 0;
-            }
-            
-            createFundElement(fund, index);
-            fundItems.push(fund);
-            
-            // Add the remaining amount (goal - contributed) to the total
-            const remainingAmount = fund.goal - fund.contributed;
-            updateTotal(`$${remainingAmount.toFixed(2)}`);
-        });
-
-    } catch (error) {
-        console.error('Error loading shared list:', error);
-    }
-}
 
     // Toggle side menu when hamburger icon is clicked
     document.getElementById("menuToggle").addEventListener("click", function() {
