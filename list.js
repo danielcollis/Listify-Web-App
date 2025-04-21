@@ -1140,12 +1140,25 @@ document.addEventListener('DOMContentLoaded', function() {
       if (e.key === 'Enter') {
         e.preventDefault();
         wishlistNameHeading.contentEditable = false;
-        wishlistName = wishlistNameHeading.textContent.trim(); // update global
-        updateTotal(); // refresh total if needed
+        const newName = wishlistNameHeading.textContent.trim();
+        if (newName) {
+          updateWishlistName(newName);
+        } else {
+          wishlistNameHeading.textContent = wishlistName;
+        }
       }
     });
     
-
+    // Also save when user clicks outside the element
+    wishlistNameHeading.addEventListener("blur", function () {
+      wishlistNameHeading.contentEditable = false;
+      const newName = wishlistNameHeading.textContent.trim();
+      if (newName) {
+        updateWishlistName(newName);
+      } else {
+        wishlistNameHeading.textContent = wishlistName;
+      }
+    });
 
     document.getElementById("applyFilters").addEventListener("click", applyFilters);
 
@@ -1274,8 +1287,7 @@ document.addEventListener("DOMContentLoaded", function () {
         wishlistNameHeading.contentEditable = false;
         const newName = wishlistNameHeading.textContent.trim();
         if (newName) {
-          wishlistName = newName;
-          console.log("Updated wishlist name:", wishlistName);
+          updateWishlistName(newName);
         } else {
           wishlistNameHeading.textContent = wishlistName;
         }
