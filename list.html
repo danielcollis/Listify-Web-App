@@ -28,8 +28,8 @@
     
     <!-- Wishlist Name Display -->
     <div id="wishlistNameDisplay" class="wishlist-name-display">
-        <h2 id="wishlistNameHeading">My Wishlist</h2>
-        <button id="editNameBtn" class="edit-name-btn">✎</button>
+        <h2 id="wishlistNameHeading" contenteditable="false">My Wish List</h2>
+        <button id="editNameBtn" class="edit-btn" title="Edit list name">✎</button>
     </div>
     
     <div class="container">
@@ -48,21 +48,7 @@
         <button id="addLinkBtn">Add</button>
 
     </div>
-    
-    <!-- Share Button -->
-    <button id="shareButton" class="share-btn">Share List</button>
-    <!-- Hide Purchased Toggle-->
-    <button id="togglePurchasedButton" class="toggle-btn">Hide Purchased Items</button>
-    
-    <!-- Share Link Popup -->
-    <div id="shareLinkPopup" class="share-popup">
-        <div class="share-popup-content">
-            <span class="close-popup">&times;</span>
-            <h3>Share Your List</h3>
-            <input type="text" id="shareLink" readonly>
-            <button id="copyShareLink">Copy Link</button>
-        </div>
-    </div>
+
     
     <!-- Wishlist Name Edit Modal -->
     <div id="nameEditModal" class="name-edit-modal">
@@ -103,7 +89,13 @@
     
     <ul id="linkList"></ul>
     
-    <h2 id="totalPrice">Total: $0.00</h2>
+
+    <div class="complete-list-wrapper">
+        <p id="totalPrice">Total: $0.00</p>
+        <button id="completeListBtn">Complete List</button>
+      </div>
+      
+
 
     <script type="module">
     // Your Firebase config object

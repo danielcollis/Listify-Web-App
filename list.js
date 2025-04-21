@@ -925,6 +925,24 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    //Complete list button functionality
+    document.addEventListener("DOMContentLoaded", function () {
+        const completeListBtn = document.getElementById("completeListBtn");
+      
+        if (completeListBtn) {
+          completeListBtn.addEventListener("click", function () {
+            const payload = {
+              items: listItems,
+              funds: fundItems,
+              name: wishlistName
+            };
+      
+            const encodedData = btoa(encodeURIComponent(JSON.stringify(payload)));
+            window.location.href = "My_Wishlist/my_wishlist.html?list=" + encodedData;
+          });
+        }
+      });
     
     
     // Add Fund Functionality
@@ -1104,46 +1122,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   
     // Add Wishlist Name Edit Functionality
-    const editNameBtn = document.getElementById('editNameBtn');
+
     const nameEditModal = document.getElementById('nameEditModal');
     const wishlistNameInput = document.getElementById('wishlistNameInput');
     const saveNameBtn = document.getElementById('saveNameBtn');
     const cancelNameBtn = document.getElementById('cancelNameBtn');
+    const editNameBtn = document.getElementById('editNameBtn');
+    const wishlistNameHeading = document.getElementById('wishlistNameHeading');
     
-    // Open modal when edit button is clicked
-    editNameBtn.addEventListener('click', function() {
-        wishlistNameInput.value = wishlistName;
-        nameEditModal.style.display = 'block';
-        wishlistNameInput.focus();
+    editNameBtn.addEventListener('click', function () {
+      wishlistNameHeading.contentEditable = true;
+      wishlistNameHeading.focus();
     });
     
-    // Save button functionality
-    saveNameBtn.addEventListener('click', function() {
-        const newName = wishlistNameInput.value.trim();
-        if (newName) {
-            updateWishlistName(newName);
-        }
-        nameEditModal.style.display = 'none';
+    // Save on Enter
+    wishlistNameHeading.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        wishlistNameHeading.contentEditable = false;
+        wishlistName = wishlistNameHeading.textContent.trim(); // update global
+        updateTotal(); // refresh total if needed
+      }
     });
     
-    // Cancel button functionality
-    cancelNameBtn.addEventListener('click', function() {
-        nameEditModal.style.display = 'none';
-    });
-    
-    // Allow Enter key in name input
-    wishlistNameInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            saveNameBtn.click();
-        }
-    });
-    
-    // Close modal if clicked outside
-    nameEditModal.addEventListener('click', function(e) {
-        if (e.target === nameEditModal) {
-            nameEditModal.style.display = 'none';
-        }
-    });
+
 
     document.getElementById("applyFilters").addEventListener("click", applyFilters);
 
@@ -1210,3 +1212,74 @@ function renderFilteredItems(filteredItems) {
         listContainer.appendChild(listItem);
     });
 }
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  const logoutBtn = document.getElementById("logoutButton");
+  const wishlistsBtn = document.getElementById("wishlistsButton");
+  const menuToggle = document.getElementById("menuToggle");
+  const sideMenu = document.getElementById("sideMenu");
+  const completeListBtn = document.getElementById("completeListBtn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function () {
+      localStorage.removeItem("listify_current_user");
+      window.location.href = "Login/login.html";
+    });
+  }
+
+  if (wishlistsBtn) {
+    wishlistsBtn.addEventListener("click", function () {
+      window.location.href = "My_Wishlist/my_wishlist.html";
+    });
+  }
+
+  if (menuToggle && sideMenu) {
+    menuToggle.addEventListener("click", function () {
+      sideMenu.style.width = sideMenu.style.width === "250px" ? "0" : "250px";
+    });
+  }
+
+  if (completeListBtn) {
+    completeListBtn.addEventListener("click", function () {
+      const payload = {
+        items: listItems,
+        funds: fundItems,
+        name: wishlistName
+      };
+
+      // Save to localStorage before redirecting
+      const savedLists = JSON.parse(localStorage.getItem('saved_lists') || '[]');
+      savedLists.push(payload);
+      localStorage.setItem('saved_lists', JSON.stringify(savedLists));
+
+      //Redirect too wishlist with encoded data
+      const encodedData = btoa(encodeURIComponent(JSON.stringify(payload)));
+      window.location.href = "My_Wishlist/my_wishlist.html?list=" + encodedData;
+    });
+  }
+
+  const wishlistNameHeading = document.getElementById("wishlistNameHeading");
+  const editNameBtn = document.getElementById("editNameBtn");
+
+  if (editNameBtn && wishlistNameHeading) {
+    editNameBtn.addEventListener("click", function () {
+      wishlistNameHeading.contentEditable = true;
+      wishlistNameHeading.focus();
+    });
+
+    wishlistNameHeading.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        wishlistNameHeading.contentEditable = false;
+        const newName = wishlistNameHeading.textContent.trim();
+        if (newName) {
+          wishlistName = newName;
+          console.log("Updated wishlist name:", wishlistName);
+        } else {
+          wishlistNameHeading.textContent = wishlistName;
+        }
+      }
+    });
+  }
+});
