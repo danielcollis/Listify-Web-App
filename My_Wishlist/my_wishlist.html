@@ -2,33 +2,273 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Wish Lists</title>
-    <link rel="stylesheet" href="my_wishlist.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlists - Listify</title>
+    <link rel="stylesheet" href="../list.css"> <!-- Reuse same styles -->
+    <style>
+        .wishlists-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .wishlist-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .wishlist-info {
+            flex-grow: 1;
+        }
+        
+        .wishlist-title {
+            margin: 0;
+            color: #d63384;
+            font-size: 1.2rem;
+        }
+        
+        .wishlist-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .wishlist-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .wishlist-actions button {
+            background-color: #d63384;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .wishlist-actions button:hover {
+            background-color: #b0296b;
+        }
+        
+        .delete-btn {
+            background-color: #dc3545 !important;
+            font-size: 0.9rem;
+            padding: 5px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c82333 !important;
+        }
+        
+        .create-new {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #d63384;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        
+        .create-new:hover {
+            background-color: #b0296b;
+        }
+        
+        .no-wishlists {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
     <!-- Hamburger Menu -->
     <div id="menuToggle" class="menu-toggle">
-        &#9776;
+        &#9776; <!-- Hamburger icon -->
     </div>
 
-  <!-- Side Menu -->
-   <div id="sideMenu" class="side-menu">
-    <!-- Home Button -->
-    <button onclick="window.location.href='../home.html'">Home</button>
-     <!--My Wish List Button-->
-     <button onclick="window.location.href = '../My_wishlist/my_wishlist.html'">My Wishlists</button>
-    <!--Log Out Button -->
-    <button onclick="window.location.href = '../Login/login.html'">Log Out</button>
-
+    <!-- Side Menu -->
+    <div id="sideMenu" class="side-menu">
+        <!-- Home Button -->
+        <button onclick="window.location.href='../home.html'">Home</button>
+        <!--My Wish List Button-->
+        <button onclick="window.location.href = '/My_wishlist/my_wishlist.html'">My Wishlists</button>
+        <!--Register Button-->
+        <button onclick="window.location.href = '../Login/login.html#register'">Register</button>
+        <!--Log Out Button -->
+        <button onclick="window.location.href = '../Login/login.html'">Log Out</button>
     </div>
 
-    <main class="main-content">
-        <h1>My Wish Lists</h1>
-        <p>Your saved wish lists will appear here.</p>
-        <div id="wishlistContainer"></div>
-    </main>
-
-    <script src="auth.js"></script>
-    <script src="my_wishlist.js"></script>
+    <h1 class="title"><a href="../home.html">Listify</a></h1>
+    
+    <div class="wishlists-container">
+        <h2>My Wishlists</h2>
+        
+        <div id="wishlistsContainer">
+            <!-- Wishlists will be loaded here -->
+            <div class="no-wishlists" id="noWishlists">
+                <p>You don't have any wishlists yet.</p>
+            </div>
+        </div>
+        
+        <button id="createNewWishlist" class="create-new">Create New Wishlist</button>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-analytics.js";
+        import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwkNR4FXq2fZ-FnomEYRkZ9WTwk5k9G48",
+            authDomain: "listify-f2df0.firebaseapp.com",
+            projectId: "listify-f2df0",
+            storageBucket: "listify-f2df0.appspot.com",
+            messagingSenderId: "444295301374",
+            appId: "1:444295301374:web:73f8519bb4fac1c340bdaf",
+            measurementId: "G-QEYWCMTXEL"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    // User is signed in
+                    await loadUserWishlists(user.uid);
+                } else {
+                    // User is not signed in, redirect to login
+                    window.location.href = "../Login/login.html";
+                }
+            });
+            
+            // Create new wishlist button
+            document.getElementById('createNewWishlist').addEventListener('click', function() {
+                window.location.href = "../list.html";
+            });
+            
+            // Toggle side menu
+            document.getElementById("menuToggle").addEventListener("click", function() {
+                let menu = document.getElementById("sideMenu");
+                if (menu.style.width === "250px") {
+                    menu.style.width = "0"; // Close the menu
+                } else {
+                    menu.style.width = "250px"; // Open the menu
+                }
+            });
+        });
+        
+        // Load user's wishlists
+        async function loadUserWishlists(userId) {
+            try {
+                const wishlistsContainer = document.getElementById('wishlistsContainer');
+                const noWishlists = document.getElementById('noWishlists');
+                
+                // Query wishlists for this user
+                const q = query(collection(db, "wishlists"), where("userId", "==", userId));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    // No wishlists found
+                    noWishlists.style.display = 'block';
+                    return;
+                }
+                
+                // Hide the "no wishlists" message
+                noWishlists.style.display = 'none';
+                
+                // Clear previous content
+                wishlistsContainer.innerHTML = '';
+                
+                // Add each wishlist to the page
+                querySnapshot.forEach((doc) => {
+                    const wishlist = doc.data();
+                    const wishlistId = doc.id;
+                    
+                    const created = wishlist.created ? new Date(wishlist.created.seconds * 1000) : new Date();
+                    const formattedDate = created.toLocaleDateString();
+                    
+                    const wishlistCard = document.createElement('div');
+                    wishlistCard.className = 'wishlist-card';
+                    wishlistCard.innerHTML = `
+                        <div class="wishlist-info">
+                            <h3 class="wishlist-title">${wishlist.name || 'Untitled Wishlist'}</h3>
+                            <div class="wishlist-date">Created: ${formattedDate}</div>
+                        </div>
+                        <div class="wishlist-actions">
+                            <button class="view-btn" data-id="${wishlistId}">View</button>
+                            <button class="delete-btn" data-id="${wishlistId}" title="Delete Wishlist">🗑️</button>
+                        </div>
+                    `;
+                    
+                    wishlistsContainer.appendChild(wishlistCard);
+                    
+                    // Add event listeners to buttons
+                    wishlistCard.querySelector('.view-btn').addEventListener('click', function() {
+                        window.location.href = `../list.html?id=${wishlistId}`;
+                    });
+                    
+                    wishlistCard.querySelector('.delete-btn').addEventListener('click', async function() {
+                        if (confirm('Are you sure you want to delete this wishlist? This cannot be undone.')) {
+                            await deleteWishlist(wishlistId);
+                            wishlistCard.remove();
+                            
+                            // Check if there are any wishlists left
+                            if (wishlistsContainer.children.length === 0) {
+                                noWishlists.style.display = 'block';
+                            }
+                        }
+                    });
+                });
+                
+            } catch (error) {
+                console.error("Error loading wishlists:", error);
+            }
+        }
+        
+        // Delete a wishlist and all its items
+        async function deleteWishlist(wishlistId) {
+            try {
+                // First delete all items in this wishlist
+                const itemsQuery = query(collection(db, "wishlistItems"), where("wishlistId", "==", wishlistId));
+                const itemsSnapshot = await getDocs(itemsQuery);
+                
+                const deletePromises = [];
+                itemsSnapshot.forEach((itemDoc) => {
+                    deletePromises.push(deleteDoc(doc(db, "wishlistItems", itemDoc.id)));
+                });
+                
+                // Wait for all item deletions to complete
+                await Promise.all(deletePromises);
+                
+                // Then delete the wishlist itself
+                await deleteDoc(doc(db, "wishlists", wishlistId));
+                
+                console.log("Wishlist and all its items deleted successfully");
+            } catch (error) {
+                console.error("Error deleting wishlist:", error);
+            }
+        }
+    </script>
 </body>
 </html>

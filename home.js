@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Create New List Button
     document.getElementById("new-list").addEventListener("click", function() {
-        window.location.href = "list.html";
+        window.location.href = "list.html"; // This will create a new wishlist without an ID
     });
 
     // Open Shared List Button

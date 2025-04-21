@@ -21,34 +21,21 @@ document.addEventListener('DOMContentLoaded', function() {
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
 
-  // ======= DOM ELEMENTS (needed for registration & form logic) =======
-  const loginForm = document.getElementById("loginForm");
-  const registerForm = document.getElementById("registerForm");
-  const resetForm = document.getElementById("reset-form");
 
-  const loginEmail = document.getElementById("loginEmail");
-  const loginPassword = document.getElementById("loginPassword");
-  const loginError = document.getElementById("login-error");
+  // Check URL hash for direct navigation
+  if(window.location.hash === '#register') {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+    document.getElementById('reset-form').style.display = 'none';
+  }
 
-  const registerEmail = document.getElementById("registerEmail");
-  const registerPassword = document.getElementById("registerPassword");
-  const registerConfirmPassword = document.getElementById("registerConfirmPassword");
-  const registerError = document.getElementById("register-error");
-
-  const resetEmail = document.getElementById("reset-email");
-  const resetMessage = document.getElementById("reset-message");
-  const resetButton = document.getElementById("reset-button");
-
-  const showRegister = document.getElementById("show-register");
-  const showLogin = document.getElementById("show-login");
-  const forgotPassword = document.getElementById("forgot-password");
-  const backToLogin = document.getElementById("back-to-login");
-
-  // ======= Handle Login =======
-  loginForm.addEventListener("submit", async (e) => {
+  // Handle Login
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = loginEmail.value;
-    const password = loginPassword.value;
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const loginError = document.getElementById("login-error");
+    loginError.textContent = '';
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -61,9 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // ======= Handle Registration =======
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = registerEmail.value.trim();
-    const password = registerPassword.value.trim();
-    const confirmPassword = registerConfirmPassword.value.trim();
+    const email = document.getElementById("registerEmail").value.trim();
+    const password = document.getElementById("registerPassword").value.trim();
+    const confirmPassword = document.getElementById("registerConfirmPassword").value.trim();
+    const registerError = document.getElementById("register-error");
     registerError.textContent = '';
 
     // Basic validation
@@ -87,15 +75,16 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       alert("Registration successful! You can now log in.");
-      showLogin.click(); // Switch to login form
+      document.getElementById('show-login').click();
     } catch (error) {
       registerError.textContent = "Registration failed: " + error.message;
     }
   });
 
-  // ======= Handle Password Reset =======
-  resetButton.addEventListener('click', async () => {
-    const email = resetEmail.value.trim();
+  // Handle Password Reset
+  document.getElementById("reset-button").addEventListener('click', async () => {
+    const email = document.getElementById("reset-email").value.trim();
+    const resetMessage = document.getElementById("reset-message");
     resetMessage.textContent = '';
 
     if (!email) {
@@ -113,43 +102,43 @@ document.addEventListener('DOMContentLoaded', function() {
       await sendPasswordResetEmail(auth, email);
       resetMessage.textContent = 'Password reset instructions have been sent to your email.';
       resetMessage.className = 'success-message';
-      resetEmail.value = '';
+      document.getElementById("reset-email").value = '';
     } catch (error) {
       resetMessage.textContent = 'Error sending reset email: ' + error.message;
       resetMessage.className = 'error-message';
     }
   });
 
-  // ======= UI: Toggle Form Views =======
-  showRegister.addEventListener('click', function(e) {
+  // UI: Toggle form views
+  document.getElementById('show-register').addEventListener('click', function(e) {
     e.preventDefault();
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'block';
-    resetForm.style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+    document.getElementById('reset-form').style.display = 'none';
     clearAllFields();
   });
 
-  showLogin.addEventListener('click', function(e) {
+  document.getElementById('show-login').addEventListener('click', function(e) {
     e.preventDefault();
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-    resetForm.style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('reset-form').style.display = 'none';
     clearAllFields();
   });
 
-  forgotPassword.addEventListener('click', function(e) {
+  document.getElementById('forgot-password').addEventListener('click', function(e) {
     e.preventDefault();
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'none';
-    resetForm.style.display = 'block';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('reset-form').style.display = 'block';
     clearAllFields();
   });
 
-  backToLogin.addEventListener('click', function(e) {
+  document.getElementById('back-to-login').addEventListener('click', function(e) {
     e.preventDefault();
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-    resetForm.style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('reset-form').style.display = 'none';
     clearAllFields();
   });
 
@@ -167,17 +156,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ======= Helper: Clear All Form Fields and Errors =======
   function clearAllFields() {
-    loginEmail.value = '';
-    loginPassword.value = '';
-    loginError.textContent = '';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('login-error').textContent = '';
 
-    registerEmail.value = '';
-    registerPassword.value = '';
-    registerConfirmPassword.value = '';
-    registerError.textContent = '';
+    document.getElementById('registerEmail').value = '';
+    document.getElementById('registerPassword').value = '';
+    document.getElementById('registerConfirmPassword').value = '';
+    document.getElementById('register-error').textContent = '';
 
-    resetEmail.value = '';
-    resetMessage.textContent = '';
+    document.getElementById('reset-email').value = '';
+    document.getElementById('reset-message').textContent = '';
   }
 
   // Optional: Automatically redirect if already logged in
