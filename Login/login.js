@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
 
-
   // Check URL hash for direct navigation
   if(window.location.hash === '#register') {
     document.getElementById('loginForm').style.display = 'none';
@@ -45,8 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // ======= Handle Registration =======
-  registerForm.addEventListener("submit", async (e) => {
+  // Handle Registration
+  document.getElementById("registerForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("registerEmail").value.trim();
     const password = document.getElementById("registerPassword").value.trim();
@@ -142,19 +141,19 @@ document.addEventListener('DOMContentLoaded', function() {
     clearAllFields();
   });
 
-  // ======= Helper: Email Validation =======
+  // Helper: Validate email
   function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  // ======= Helper: Password Validation =======
+  // Helper: Validate password strength
   function isValidPassword(password) {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return passwordRegex.test(password);
   }
 
-  // ======= Helper: Clear All Form Fields and Errors =======
+  // Helper: Clear all form fields and errors
   function clearAllFields() {
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
@@ -169,9 +168,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('reset-message').textContent = '';
   }
 
-  // Optional: Automatically redirect if already logged in
+  // Optional: Redirect to home if already logged in
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      // Already logged in
       console.log("User is already signed in.");
     }
   });
