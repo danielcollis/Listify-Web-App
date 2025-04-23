@@ -17,7 +17,6 @@ Listify is a social gift management application designed for online shoppers, gi
 - **Easy Sharing**: Generate shareable links to send to friends and family
 - **Purchase Status**: Track which items have been purchased
 - **Filter Items**: Filter by price range and product categories
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **Add Experiences**: Save and share memorable experiences like vacations and activities
 
 ## Tech Stack
@@ -25,7 +24,7 @@ Listify is a social gift management application designed for online shoppers, gi
 - **Frontend**: HTML, CSS, JavaScript
 - **Backend/Database**: Firebase (Firestore)
 - **Authentication**: Firebase Authentication
-- **Hosting**: [Your hosting platform]
+- **Hosting**: Github Pages
 
 ## Installation
 
@@ -49,10 +48,6 @@ Listify is a social gift management application designed for online shoppers, gi
    - Enable Firestore Database and Authentication services
    - Update the Firebase configuration in your project files
 
-5. Start the development server:
-   ```
-   [Your start command here]
-   ```
 
 ## Project Structure
 
@@ -79,28 +74,6 @@ Listify Web App/
 5. **Manage Items**: Mark items as purchased, edit details, or remove items
 6. **Filter Items**: Use the filter options to view items by price range or category
 
-## Development
-
-### Prerequisites
-
-- Node.js and npm
-- Firebase account
-
-### Setting Up Development Environment
-
-1. Install development dependencies:
-   ```
-   npm install
-   ```
-
-2. Configure Firebase for development:
-   - Create a development project in Firebase
-   - Update the configuration in your development files
-
-## Deployment
-
-[Instructions for deploying the application]
-
 ## Contributing
 
 1. Fork the repository
@@ -108,18 +81,3 @@ Listify Web App/
 3. Commit your changes: `git commit -m 'Add some amazing feature'`
 4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
-
-## License
-
-[Your license information]
-
-## Contact
-
-Daniel Collis - [Your contact information]
-
-Project Link: [https://github.com/danielcollis/Listify-Web-App](https://github.com/danielcollis/Listify-Web-App)
-
-## Acknowledgements
-
-- [Firebase](https://firebase.google.com/)
-- [Other libraries or resources used]
