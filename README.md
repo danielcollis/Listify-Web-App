@@ -35,12 +35,7 @@ Listify is a social gift management application designed for online shoppers, gi
    cd Listify-Web-App
    ```
 
-3. Install dependencies:
-   ```
-   npm install
-   ```
-
-4. Configure Firebase:
+3. Configure Firebase:
    - Create a Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
    - Enable Firestore Database and Authentication services
    - Update the Firebase configuration in your project files
