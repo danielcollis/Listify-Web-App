@@ -39,20 +39,14 @@ Listify is a social gift management application designed for online shoppers, gi
    cd Listify-Web-App
    ```
 
-3. Install dependencies:
-   ```
-   npm install
-   ```
+3. No npm installation required - the project uses Firebase via CDN imports
 
 4. Configure Firebase:
    - Create a Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
    - Enable Firestore Database and Authentication services
-   - Update the Firebase configuration in your project files
+   - Update the Firebase configuration in the project files (look for the `firebaseConfig` object in your HTML files)
 
-5. Start the development server:
-   ```
-   [Your start command here]
-   ```
+5. Deploy or serve the files locally using your preferred web server
 
 ## Project Structure
 
@@ -66,7 +60,7 @@ Listify Web App/
 ├── list.css          # List page styling
 ├── list.html         # Individual wishlist page
 ├── list.js           # Wishlist functionality
-├── package.json      # Project dependencies
+├── package.json      # Firebase dependency reference
 └── README.md         # Project documentation
 ```
 
@@ -83,23 +77,34 @@ Listify Web App/
 
 ### Prerequisites
 
-- Node.js and npm
 - Firebase account
+- A modern web browser
+- Basic web server for local development (can be as simple as VS Code's Live Server extension)
 
 ### Setting Up Development Environment
 
-1. Install development dependencies:
-   ```
-   npm install
-   ```
-
-2. Configure Firebase for development:
+1. Configure Firebase for development:
    - Create a development project in Firebase
-   - Update the configuration in your development files
+   - Enable Authentication and Firestore services
+   - Update the Firebase configuration in your HTML files
+
+2. Serve the application files locally using a basic web server
 
 ## Deployment
 
-[Instructions for deploying the application]
+You can deploy this application to various hosting platforms:
+
+1. **Firebase Hosting** (Recommended)
+   - Install Firebase CLI: `npm install -g firebase-tools`
+   - Login to Firebase: `firebase login`
+   - Initialize your project: `firebase init`
+   - Deploy: `firebase deploy`
+
+2. **Other static hosting options**:
+   - GitHub Pages
+   - Netlify
+   - Vercel
+   - Amazon S3
 
 ## Contributing
 
