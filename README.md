@@ -4,9 +4,6 @@
 
 Listify is a social gift management application designed for online shoppers, gift planners, wedding registries, and social media influencers. It provides an intuitive and organized experience for tracking and sharing online wishlists across different platforms and categories.
 
-**FOR** frequent online shoppers, gift planners, wedding registries, and social media influencers **WHO** need a seamless way to save and share the items and services they intend to buy, Listify is a social gift management application **THAT** provides an intuitive, and organized experience for tracking and sharing online wishlists. 
-**UNLIKE** other wishlist applications such as Amazon, **OUR PRODUCT** fosters effortless sharing with friends, family, and social networks, while also allowing users to add memorable experiences, such as vacations, hotel stays, and unique activities.
-
 ## Features
 
 - **User Authentication**: Secure login and registration system using Firebase Authentication
