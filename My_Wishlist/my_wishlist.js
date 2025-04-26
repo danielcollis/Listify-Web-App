@@ -1,6 +1,9 @@
 let isSharedView = false;
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Show loading spinner initially
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
     // Toggle side menu when hamburger icon is clicked
     const menuToggle = document.getElementById("menuToggle");
     const sideMenu = document.getElementById("sideMenu");
@@ -33,10 +36,15 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function processUrlParameters() {
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    loadingSpinner.style.display = 'flex'; // Show loading spinner
+    
     const urlParams = new URLSearchParams(window.location.search);
     const encoded = urlParams.get("shared") || urlParams.get("list");
 
-    if (!encoded) return;
+    if (!encoded) {
+        return;
+    }
 
     try {
         const loadedData = JSON.parse(decodeURIComponent(atob(encoded)));
@@ -45,6 +53,7 @@ function processUrlParameters() {
             isSharedView = true;
             const actualList = loadedData.wishlist || loadedData;
             displaySingleSharedList(actualList);
+            loadingSpinner.style.display = 'none'; // Hide loading spinner
             return;
         }
 
@@ -60,14 +69,19 @@ function processUrlParameters() {
         }
 
         window.history.replaceState({}, document.title, window.location.pathname);
+        loadingSpinner.style.display = 'none'; // Hide loading spinner
 
     } catch (error) {
         console.error('Error processing shared/list URL parameter:', error);
+        loadingSpinner.style.display = 'none'; // Hide loading spinner in case of error
     }
 }
 
 
 function displayWishlists() {
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    loadingSpinner.style.display = 'flex'; // Show loading spinner
+    
     const container = document.getElementById('wishlistContainer');
     const lists = JSON.parse(localStorage.getItem('saved_lists') || '[]');
 
@@ -76,6 +90,7 @@ function displayWishlists() {
     
     if (!container) {
         console.error("Container element not found");
+        loadingSpinner.style.display = 'none'; // Hide loading spinner
         return;
     }
     
@@ -84,6 +99,7 @@ function displayWishlists() {
     
     if (lists.length === 0) {
         container.innerHTML = '<p>You have no saved wishlists yet.</p>';
+        loadingSpinner.style.display = 'none'; // Hide loading spinner
         return;
     }
     
@@ -363,6 +379,9 @@ function displayWishlists() {
             this.textContent = isVisible ? 'Show Items' : 'Hide Items';
         });
     });
+    
+    // Hide loading spinner after wishlists are displayed
+    loadingSpinner.style.display = 'none';
 }
 
 // Add this new function to toggle visibility of purchased items
@@ -395,11 +414,19 @@ function togglePurchasedItemsVisibility(listIndex) {
 
 //Delete wishlist functionality
 function deleteWishlist(listIndex) {
+    // Show loading spinner
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
     // Show confirmation popup
     if (!confirm('Are you sure you want to delete this wishlist? This action cannot be undone.')) return;
     
+    loadingSpinner.style.display = 'flex'; // Show loading spinner
+    
     const lists = JSON.parse(localStorage.getItem('saved_lists') || '[]');
-    if (!lists[listIndex]) return;
+    if (!lists[listIndex]) {
+        loadingSpinner.style.display = 'none'; // Hide loading spinner
+        return;
+    }
     
     // Remove the wishlist from the array
     lists.splice(listIndex, 1);
@@ -410,6 +437,8 @@ function deleteWishlist(listIndex) {
     // Refresh the display
     if (!isSharedView) {
         displayWishlists();
+    } else {
+        loadingSpinner.style.display = 'none'; // Hide loading spinner
     }
 }
 
@@ -625,6 +654,9 @@ function formatPrice(price) {
 
 
 function displaySingleSharedList(sharedList) {
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    loadingSpinner.style.display = 'flex'; // Show loading spinner
+    
     const container = document.getElementById('wishlistContainer');
     container.innerHTML = '';
 
@@ -747,4 +779,7 @@ function displaySingleSharedList(sharedList) {
 
     card.appendChild(details);
     container.appendChild(card);
+    
+    // Hide loading spinner after shared list is displayed
+    loadingSpinner.style.display = 'none';
 }
