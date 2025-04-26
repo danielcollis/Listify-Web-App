@@ -35,9 +35,13 @@ async function initializeWishlist() {
             const decodedData = decodeURIComponent(atob(encodedList));
             const loadedData = JSON.parse(decodedData);
             displaySharedList(loadedData);
+            // Hide loading spinner after shared list is displayed
+            document.getElementById('loadingSpinner').style.display = 'none';
             return;
         } catch (error) {
             console.error('Error loading shared list:', error);
+            // Hide loading spinner in case of error
+            document.getElementById('loadingSpinner').style.display = 'none';
         }
     }
 
@@ -88,8 +92,13 @@ async function createNewWishlist() {
         newUrl.searchParams.set('id', currentWishlistId);
         window.history.pushState({}, '', newUrl);
         
+        // Hide loading spinner after new wishlist is created
+        document.getElementById('loadingSpinner').style.display = 'none';
+        
     } catch (error) {
         console.error("Error creating new wishlist:", error);
+        // Hide loading spinner in case of error
+        document.getElementById('loadingSpinner').style.display = 'none';
     }
 }
 
@@ -168,8 +177,13 @@ async function loadWishlistItems(wishlistId) {
             updateTotal(`$${remainingAmount.toFixed(2)}`);
         });
         
+        // Hide loading spinner after data is loaded
+        document.getElementById('loadingSpinner').style.display = 'none';
+        
     } catch (error) {
         console.error("Error loading wishlist items:", error);
+        // Hide loading spinner in case of error
+        document.getElementById('loadingSpinner').style.display = 'none';
     }
 }
 
@@ -214,6 +228,9 @@ function displaySharedList(loadedData) {
         const remainingAmount = fund.goal - fund.contributed;
         updateTotal(`$${remainingAmount.toFixed(2)}`);
     });
+    
+    // Hide loading spinner after shared list is displayed
+    document.getElementById('loadingSpinner').style.display = 'none';
 }
 
 // Create DOM element for an item (used by both loadWishlistItems and displaySharedList)
