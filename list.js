@@ -103,6 +103,8 @@ async function loadWishlistItems(wishlistId) {
         document.getElementById('linkList').innerHTML = '';
         document.getElementById('totalPrice').innerText = `Total: $0.00`;
         
+        console.log("Loading wishlist items for: ", wishlistId);
+        
         // Get the wishlist document to retrieve the name
         const wishlistDoc = await getDoc(doc(db, "wishlists", wishlistId));
         if (wishlistDoc.exists()) {
@@ -121,6 +123,8 @@ async function loadWishlistItems(wishlistId) {
         const q = query(collection(db, "wishlistItems"), where("wishlistId", "==", wishlistId));
         const querySnapshot = await getDocs(q);
         
+        console.log("Found wishlist items: ", querySnapshot.size);
+        
         querySnapshot.forEach((docSnap) => {
             const item = docSnap.data();
             item.docId = docSnap.id; // Store the document ID for later updates/deletes
@@ -135,8 +139,34 @@ async function loadWishlistItems(wishlistId) {
             }
         });
         
-        // Also load fund items if you have those
-        // Similar code would go here
+        // Load fund items
+        console.log("Querying wishlist funds for wishlistId: ", wishlistId);
+        const fundsQuery = query(collection(db, "wishlistFunds"), where("wishlistId", "==", wishlistId));
+        const fundsSnapshot = await getDocs(fundsQuery);
+        
+        console.log("Found funds: ", fundsSnapshot.size);
+        
+        fundsSnapshot.forEach((docSnap) => {
+            console.log("Processing fund:", docSnap.id);
+            const fund = docSnap.data();
+            fund.docId = docSnap.id; // Store the document ID for later updates/deletes
+            
+            console.log("Fund data:", fund);
+            
+            fundItems.push(fund);
+            
+            // Create DOM element for the fund
+            try {
+                createFundElement(fund, fundItems.length - 1);
+                console.log("Fund element created successfully");
+            } catch (error) {
+                console.error("Error creating fund element:", error);
+            }
+            
+            // Add the remaining amount to the total
+            const remainingAmount = fund.goal - fund.contributed;
+            updateTotal(`$${remainingAmount.toFixed(2)}`);
+        });
         
     } catch (error) {
         console.error("Error loading wishlist items:", error);
@@ -716,6 +746,13 @@ function openContributeModal(fundIndex) {
         // Add contribution to fund
         fundItems[fundIndex].contributed += contributionAmount;
         
+        // Update in Firestore if we have a document ID
+        const fundElement = document.querySelector(`[data-fund-index="${fundIndex}"]`);
+        const docId = fundElement.getAttribute('data-doc-id');
+        if (docId) {
+            updateFundInFirestore(docId, { contributed: fundItems[fundIndex].contributed });
+        }
+        
         // Update the total (subtract the contribution)
         updateTotal(`$${contributionAmount.toFixed(2)}`, false);
         
@@ -773,6 +810,101 @@ function updateWishlistName(name) {
     if (currentWishlistId) {
         updateWishlistNameInFirestore(name);
     }
+}
+
+// Move createFundElement function outside of the DOMContentLoaded event listener to make it available globally
+function createFundElement(fund, index) {
+    // Create a list item for the fund
+    const listItem = document.createElement('li');
+    listItem.className = 'fund-item';
+    listItem.setAttribute('data-fund-index', index);
+    
+    // Add document ID attribute if available
+    if (fund.docId) {
+        listItem.setAttribute('data-doc-id', fund.docId);
+    }
+    
+    // Create the fund header (contains fund name and buttons)
+    const fundHeader = document.createElement('div');
+    fundHeader.className = 'fund-header';
+    
+    // Create fund name element
+    const fundName = document.createElement('div');
+    fundName.className = 'fund-name';
+    fundName.textContent = `Fund: ${fund.name}`;
+    fundHeader.appendChild(fundName);
+    
+    // Create fund actions container
+    const fundActions = document.createElement('div');
+    fundActions.className = 'fund-actions';
+    
+    // Create contribute button
+    const contributeBtn = document.createElement('button');
+    contributeBtn.className = 'contribute-btn';
+    contributeBtn.textContent = 'Contribute';
+    contributeBtn.onclick = function() {
+        const fundIndex = parseInt(listItem.getAttribute('data-fund-index'));
+        openContributeModal(fundIndex);
+    };
+    fundActions.appendChild(contributeBtn);
+    
+    // Create delete button
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'X';
+    deleteButton.className = 'delete-btn';
+    deleteButton.onclick = function() {
+        const fundIndex = parseInt(listItem.getAttribute('data-fund-index'));
+        const remainingAmount = fundItems[fundIndex].goal - fundItems[fundIndex].contributed;
+        
+        // Remove the remaining amount from the total
+        updateTotal(`$${remainingAmount.toFixed(2)}`, false);
+        
+        // Also delete from Firestore if we have a document ID
+        const docId = listItem.getAttribute('data-doc-id');
+        if (docId) {
+            deleteFundFromFirestore(docId);
+        }
+        
+        // Remove from fundItems array
+        fundItems.splice(fundIndex, 1);
+        
+        // Update data-fund-index attributes for all funds after this one
+        const allFundItems = document.querySelectorAll('.fund-item');
+        allFundItems.forEach(item => {
+            const itemIndex = parseInt(item.getAttribute('data-fund-index'));
+            if (itemIndex > fundIndex) {
+                item.setAttribute('data-fund-index', itemIndex - 1);
+            }
+        });
+        
+        // Remove the list item
+        listItem.remove();
+    };
+    fundActions.appendChild(deleteButton);
+    
+    fundHeader.appendChild(fundActions);
+    listItem.appendChild(fundHeader);
+    
+    // Create fund info element
+    const fundInfo = document.createElement('div');
+    fundInfo.className = 'fund-info';
+    fundInfo.textContent = `Goal: $${fund.goal.toFixed(2)} | Contributed: $${fund.contributed.toFixed(2)} | Remaining: $${(fund.goal - fund.contributed).toFixed(2)}`;
+    listItem.appendChild(fundInfo);
+    
+    // Create progress bar
+    const progressContainer = document.createElement('div');
+    progressContainer.className = 'fund-progress';
+    
+    const progressBar = document.createElement('div');
+    progressBar.className = 'fund-progress-bar-fill';
+    const progressPercentage = (fund.contributed / fund.goal) * 100;
+    progressBar.style.width = `${progressPercentage}%`;
+    
+    progressContainer.appendChild(progressBar);
+    listItem.appendChild(progressContainer);
+    
+    document.getElementById('linkList').appendChild(listItem);
+    return listItem;
 }
 
 // Event listeners for Enter key on input fields
@@ -952,88 +1084,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.body.insertBefore(fundContainer, document.getElementById("shareButton"));
 
-    function createFundElement(fund, index) {
-        // Create a list item for the fund
-        const listItem = document.createElement('li');
-        listItem.className = 'fund-item';
-        listItem.setAttribute('data-fund-index', index);
-        
-        // Create the fund header (contains fund name and buttons)
-        const fundHeader = document.createElement('div');
-        fundHeader.className = 'fund-header';
-        
-        // Create fund name element
-        const fundName = document.createElement('div');
-        fundName.className = 'fund-name';
-        fundName.textContent = `Fund: ${fund.name}`;
-        fundHeader.appendChild(fundName);
-        
-        // Create fund actions container
-        const fundActions = document.createElement('div');
-        fundActions.className = 'fund-actions';
-        
-        // Create contribute button
-        const contributeBtn = document.createElement('button');
-        contributeBtn.className = 'contribute-btn';
-        contributeBtn.textContent = 'Contribute';
-        contributeBtn.onclick = function() {
-            const fundIndex = parseInt(listItem.getAttribute('data-fund-index'));
-            openContributeModal(fundIndex);
-        };
-        fundActions.appendChild(contributeBtn);
-        
-        // Create delete button
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'X';
-        deleteButton.className = 'delete-btn';
-        deleteButton.onclick = function() {
-            const fundIndex = parseInt(listItem.getAttribute('data-fund-index'));
-            const remainingAmount = fundItems[fundIndex].goal - fundItems[fundIndex].contributed;
-            
-            // Remove the remaining amount from the total
-            updateTotal(`$${remainingAmount.toFixed(2)}`, false);
-            
-            // Remove from fundItems array
-            fundItems.splice(fundIndex, 1);
-            
-            // Update data-fund-index attributes for all funds after this one
-            const allFundItems = document.querySelectorAll('.fund-item');
-            allFundItems.forEach(item => {
-                const itemIndex = parseInt(item.getAttribute('data-fund-index'));
-                if (itemIndex > fundIndex) {
-                    item.setAttribute('data-fund-index', itemIndex - 1);
-                }
-            });
-            
-            // Remove the list item
-            listItem.remove();
-        };
-        fundActions.appendChild(deleteButton);
-        
-        fundHeader.appendChild(fundActions);
-        listItem.appendChild(fundHeader);
-        
-        // Create fund info element
-        const fundInfo = document.createElement('div');
-        fundInfo.className = 'fund-info';
-        fundInfo.textContent = `Goal: $${fund.goal.toFixed(2)} | Contributed: $${fund.contributed.toFixed(2)} | Remaining: $${(fund.goal - fund.contributed).toFixed(2)}`;
-        listItem.appendChild(fundInfo);
-        
-        // Create progress bar
-        const progressContainer = document.createElement('div');
-        progressContainer.className = 'fund-progress';
-        
-        const progressBar = document.createElement('div');
-        progressBar.className = 'fund-progress-bar-fill';
-        const progressPercentage = (fund.contributed / fund.goal) * 100;
-        progressBar.style.width = `${progressPercentage}%`;
-        
-        progressContainer.appendChild(progressBar);
-        listItem.appendChild(progressContainer);
-        
-        document.getElementById('linkList').appendChild(listItem);
-    }
-
     addFundBtn.addEventListener("click", function() {
         const name = fundNameInput.value.trim();
         const goal = parseFloat(fundGoalInput.value.trim());
@@ -1051,18 +1101,38 @@ document.addEventListener('DOMContentLoaded', function() {
         const newFund = {
             name: name,
             goal: goal,
-            contributed: 0 // Initialize contributions at 0
+            contributed: 0, // Initialize contributions at 0
+            dateAdded: new Date().toISOString(),
+            wishlistId: currentWishlistId,
+            userId: currentUserId
         };
         
-        // Add to fundItems array
-        const fundIndex = fundItems.length;
-        fundItems.push(newFund);
-        
-        // Create the fund element
-        createFundElement(newFund, fundIndex);
-        
-        // Add the goal amount to the total
-        updateTotal(`$${goal.toFixed(2)}`);
+        // Save to Firestore and update local array after receiving document ID
+        saveFundToFirestore(newFund).then(docId => {
+            if (docId) {
+                // Store the document ID
+                newFund.docId = docId;
+            }
+            
+            // Add to fundItems array
+            const fundIndex = fundItems.length;
+            fundItems.push(newFund);
+            
+            // Create the fund element
+            createFundElement(newFund, fundIndex);
+            
+            // Add the goal amount to the total
+            updateTotal(`$${goal.toFixed(2)}`);
+            
+            // Update the element with the doc ID if we have one
+            if (docId) {
+                const fundElements = document.querySelectorAll('.fund-item');
+                if (fundElements.length > 0) {
+                    const lastFund = fundElements[fundElements.length - 1];
+                    lastFund.setAttribute('data-doc-id', docId);
+                }
+            }
+        });
         
         // Clear inputs
         fundNameInput.value = "";
@@ -1209,4 +1279,46 @@ function renderFilteredItems(filteredItems) {
 
         listContainer.appendChild(listItem);
     });
+}
+
+// Save a fund item to Firestore
+async function saveFundToFirestore(fund) {
+    // Don't save to Firestore if we're viewing a shared list
+    if (!currentWishlistId) return;
+    
+    try {
+        // Add wishlistId to the fund
+        fund.wishlistId = currentWishlistId;
+        fund.userId = currentUserId;
+        
+        const docRef = await addDoc(collection(db, "wishlistFunds"), fund);
+        console.log("Fund saved to Firestore:", fund);
+        return docRef.id;
+    } catch (error) {
+        console.error("Error saving fund to Firestore:", error);
+    }
+}
+
+// Update a fund in Firestore
+async function updateFundInFirestore(docId, updates) {
+    if (!docId) return;
+    
+    try {
+        await updateDoc(doc(db, "wishlistFunds", docId), updates);
+        console.log("Fund updated in Firestore:", updates);
+    } catch (error) {
+        console.error("Error updating fund in Firestore:", error);
+    }
+}
+
+// Delete a fund from Firestore
+async function deleteFundFromFirestore(docId) {
+    if (!docId) return;
+    
+    try {
+        await deleteDoc(doc(db, "wishlistFunds", docId));
+        console.log("Fund deleted from Firestore:", docId);
+    } catch (error) {
+        console.error("Error deleting fund from Firestore:", error);
+    }
 }
