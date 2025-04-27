@@ -71,13 +71,15 @@
         <input type="text" id="textInput" placeholder="Custom text">
         <input type="text" id="priceInput" class="small-input" placeholder="Item price">
 
-          <select id="productType">
-            <option value="">Select Category</option>
-            <option value="tech">Tech</option>
-            <option value="clothing">Clothing</option>
+        <select id="productType">
+            <option value="">Select Type</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Home Goods">Home Goods</option>
             <option value="travel">Travel</option>
-            <!-- Add more categories as needed -->
-          </select>
+            <option value="add_new">Add New Category</option> <!-- Add this option at the bottom -->
+        </select>
+          
 
         <button id="addLinkBtn">Add</button>
 
@@ -123,8 +125,9 @@
 
     <select id="filterProductType">
         <option value="">All Categories</option>
-        <option value="tech">Tech</option>
-        <option value="clothing">Clothing</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Home Goods">Home Goods</option>
         <option value="travel">Travel</option>
     </select>
 

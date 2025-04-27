@@ -50,6 +50,9 @@ async function initializeWishlist() {
         if (user) {
             currentUserId = user.uid;
             
+            // NEW! Load the user's custom categories
+            await loadUserCategories(user.uid); 
+
             // Check if an existing wishlist ID was passed
             const wishlistId = urlParams.get('id');
             if (wishlistId) {
@@ -120,6 +123,34 @@ async function loadWishlistItems(wishlistId) {
             const wishlistData = wishlistDoc.data();
             updateWishlistName(wishlistData.name || "My Wishlist");
             
+
+
+
+            // custom category loading code here
+            if (wishlistData.categories && Array.isArray(wishlistData.categories)) {
+                const productTypeSelect = document.getElementById("productType");
+                const filterProductTypeSelect = document.getElementById("filterProductType");
+
+                wishlistData.categories.forEach(category => {
+                    if (!Array.from(productTypeSelect.options).some(option => option.value === category)) {
+                        const newOption = document.createElement("option");
+                        newOption.value = category;
+                        newOption.textContent = category;
+                        productTypeSelect.insertBefore(newOption, productTypeSelect.lastElementChild);
+                    }
+
+                    if (!Array.from(filterProductTypeSelect.options).some(option => option.value === category)) {
+                        const newFilterOption = document.createElement("option");
+                        newFilterOption.value = category;
+                        newFilterOption.textContent = category;
+                        filterProductTypeSelect.appendChild(newFilterOption);
+                    }
+                });
+            }
+
+
+
+
             // Verify this wishlist belongs to the current user
             if (wishlistData.userId !== currentUserId) {
                 alert("You don't have permission to access this wishlist");
@@ -232,6 +263,79 @@ function displaySharedList(loadedData) {
     // Hide loading spinner after shared list is displayed
     document.getElementById('loadingSpinner').style.display = 'none';
 }
+
+
+
+
+
+// Load categories from Firestore for a given userId
+async function loadCategoriesForUser(userId) {
+    try {
+        const categoriesSnapshot = await getDocs(
+            collection(db, "users", userId, "categories")
+        );
+        const categories = [];
+        categoriesSnapshot.forEach(doc => {
+            categories.push(doc.data().name);
+        });
+        return categories;
+    } catch (error) {
+        console.error("Error loading user categories:", error);
+        return [];
+    }
+}
+
+
+
+
+
+
+// Category Helper Functions
+
+// Function to load saved categories for the logged-in user
+async function loadUserCategories(userId) {
+    const productTypeSelect = document.getElementById("productType");
+    const filterProductTypeSelect = document.getElementById("filterProductType");
+
+    try {
+        const categoriesSnapshot = await getDocs(collection(db, "users", userId, "categories"));
+        categoriesSnapshot.forEach((doc) => {
+            const category = doc.data().name;
+
+            // Add to Product Type Dropdown
+            const newOption = document.createElement("option");
+            newOption.value = category;
+            newOption.textContent = category;
+            productTypeSelect.insertBefore(newOption, productTypeSelect.lastElementChild);
+
+            // Add to Filter Dropdown
+            const newFilterOption = document.createElement("option");
+            newFilterOption.value = category;
+            newFilterOption.textContent = category;
+            filterProductTypeSelect.appendChild(newFilterOption);
+        });
+    } catch (error) {
+        console.error("Error loading categories:", error);
+    }
+}
+
+// Function to save a new category for the logged-in user
+async function saveNewCategory(userId, categoryName) {
+    try {
+        const categoryRef = collection(db, "users", userId, "categories");
+        await addDoc(categoryRef, {
+            name: categoryName,
+            createdAt: new Date()
+        });
+        console.log("New category saved:", categoryName);
+    } catch (error) {
+        console.error("Error saving new category:", error);
+    }
+}
+
+
+
+
 
 // Create DOM element for an item (used by both loadWishlistItems and displaySharedList)
 function createItemElement(item, index) {
@@ -567,12 +671,52 @@ function createEditModal(listItem, itemIndex) {
     });
 }
 
-function addLink() {
+// Add new item (with support for adding new categories)
+async function addLink() {
     let link = document.getElementById('linkInput').value.trim();
     const text = document.getElementById('textInput').value.trim();
     let price = document.getElementById('priceInput').value.trim();
 
-    const productType = document.getElementById("productType").value;
+    const productTypeSelect = document.getElementById("productType");
+    const filterProductTypeSelect = document.getElementById("filterProductType");
+
+    let productType = productTypeSelect.value;
+    
+    // Handle "Add New Category"
+    if (productTypeSelect.value === "add_new") {
+        const newType = prompt("Enter a new category:");
+        if (newType) {
+            // Add to Product Type Dropdown
+            const newOption = document.createElement("option");
+            newOption.value = newType;
+            newOption.textContent = newType;
+            productTypeSelect.insertBefore(newOption, productTypeSelect.lastElementChild);
+            productTypeSelect.value = newType; // Automatically select the new category
+            productType = newType;
+
+            // Add to Filter Dropdown
+            const newFilterOption = document.createElement("option");
+            newFilterOption.value = newType;
+            newFilterOption.textContent = newType;
+            filterProductTypeSelect.appendChild(newFilterOption);
+
+            // Save the new category to Firestore safely
+            try {
+                const wishlistRef = doc(db, "wishlists", currentWishlistId);
+                await updateDoc(wishlistRef, {
+                    categories: arrayUnion(newType)
+                });
+                console.log(`Category '${newType}' successfully saved to Firestore!`);
+            } catch (error) {
+                console.error("Error saving category to Firestore:", error);
+            }
+
+        } else {
+            alert("No category entered. Please select an existing category or add a new one.");
+            return;
+        }
+    }
+    
 
     if (!link) {
         alert("Please enter a valid link.");
@@ -1339,3 +1483,54 @@ async function deleteFundFromFirestore(docId) {
         console.error("Error deleting fund from Firestore:", error);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const productTypeSelect = document.getElementById('productType');
+    const filterProductTypeSelect = document.getElementById('filterProductType');
+
+    // Add event listener for category selection
+    productTypeSelect.addEventListener('change', async function() {
+        if (this.value === "add_new") {
+            const newCategory = prompt("Enter a new category name:");
+            if (newCategory) {
+                // First, check if the new category already exists
+                const categoryExists = [...this.options].some(option => option.value.toLowerCase() === newCategory.toLowerCase());
+
+                if (categoryExists) {
+                    alert("Category already exists. Please choose a different name.");
+                    this.value = ""; // Reset selection
+                    return;
+                }
+
+                // Create new option for adding item
+                const newOption = document.createElement("option");
+                newOption.value = newCategory;
+                newOption.textContent = newCategory;
+                this.insertBefore(newOption, this.lastElementChild);
+                this.value = newCategory;
+
+                // Also create new option for filtering
+                const newFilterOption = document.createElement("option");
+                newFilterOption.value = newCategory;
+                newFilterOption.textContent = newCategory;
+                filterProductTypeSelect.appendChild(newFilterOption);
+
+                // Save to Firestore
+                try {
+                    await saveNewCategory(currentUserId, newCategory);
+                    console.log("Category saved successfully!");
+
+                    // Also save category to the wishlist
+                    await updateDoc(doc(db, "wishlists", currentWishlistId), {
+                        categories: arrayUnion(newCategory)
+                    });
+                    console.log("Category added to wishlist document too!");
+                } catch (error) {
+                    console.error("Error saving category to Firestore:", error);
+                }
+            } else {
+                this.value = ""; // Reset selection if user cancels
+            }
+        }
+    });
+});
