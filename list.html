@@ -33,7 +33,30 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .save-btn {
+            margin-top: 20px;
+            padding: 12px 20px;
+            background-color: #28a745;
+            color: white;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .save-btn:hover {
+            background-color: #218838;
+        }
     </style>
+
+    <style>
+        #shareButton,
+        #togglePurchasedButton {
+            visibility: hidden;
+        }
+        </style>
 </head>
 <body>
     <!-- Loading Spinner -->
@@ -141,6 +164,7 @@
     <ul id="linkList"></ul>
     
     <h2 id="totalPrice">Total: $0.00</h2>
+    <button id="saveListButton" class="save-btn">Save List</button>
 
     <script type="module">
     // Your Firebase config object

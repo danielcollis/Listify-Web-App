@@ -69,6 +69,8 @@ async function initializeWishlist() {
     });
 }
 
+
+
 // Create a new empty wishlist
 async function createNewWishlist() {
     try {
@@ -1441,6 +1443,25 @@ function renderFilteredItems(filteredItems) {
         listContainer.appendChild(listItem);
     });
 }
+
+document.getElementById("saveListButton").addEventListener("click", async function() {
+    try {
+        // Update last modified time
+        if (currentWishlistId) {
+            await updateDoc(doc(db, "wishlists", currentWishlistId), {
+                lastModified: new Date()
+            });
+            console.log("Wishlist successfully saved.");
+        }
+
+        // Redirect to My Wishlist page
+        window.location.href = "My_Wishlist/my_wishlist.html";
+    } catch (error) {
+        console.error("Error saving wishlist:", error);
+        alert("Failed to save the wishlist. Please try again.");
+    }
+});
+
 
 // Save a fund item to Firestore
 async function saveFundToFirestore(fund) {
