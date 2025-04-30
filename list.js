@@ -1,5 +1,5 @@
 // Import Firebase modules
-import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc, query, where, addDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc, query, where, addDoc, updateDoc, getDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-analytics.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
@@ -54,7 +54,7 @@ async function initializeWishlist() {
             await loadUserCategories(user.uid); 
 
             // Check if an existing wishlist ID was passed
-            const wishlistId = urlParams.get('id');
+            const wishlistId = urlParams.get('edit') || urlParams.get('id');
             if (wishlistId) {
                 currentWishlistId = wishlistId;
                 await loadWishlistItems(wishlistId);
@@ -1075,6 +1075,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the wishlist
     initializeWishlist();
     document.getElementById("addLinkBtn").addEventListener("click", addLink);
+
 
     // Add styles for fund elements
     const fundStyles = document.createElement('style');

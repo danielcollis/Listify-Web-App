@@ -1,389 +1,411 @@
 /* General Page Styling */
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #ffe6f2;
-    text-align: center;
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #ffe6f2;
+  text-align: center;
 }
 
-h1.title {
-    font-size: 2.5em;
-    font-weight: bold;
-    color: #d63384;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+h1.title,
+.title {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #d63384;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.title a {
+  color: #d63384;
+  text-decoration: none;
+  font-size: 1em;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.title a:hover {
+  text-decoration: underline;
+}
+
+.page-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #d63384;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Hamburger Menu */
 #menuToggle {
-    font-size: 30px;
-    cursor: pointer;
-    padding: 15px;
-    background-color: #d63384;
-    color: white;
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-    border-radius: 5px;
+  font-size: 30px;
+  cursor: pointer;
+  padding: 15px;
+  background-color: #d63384;
+  color: white;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  border-radius: 5px;
 }
 
 /* Sidebar Menu */
 .side-menu {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #f8d7da;
-    overflow-x: hidden;
-    transition: 0.3s;
-    padding-top: 60px;
-    z-index: 999;
+  height: 100%;
+  width: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #f8d7da;
+  overflow-x: hidden;
+  transition: 0.3s;
+  padding-top: 60px;
+  z-index: 999;
 }
 
-.side-menu a, .side-menu button {
-    display: block;
-    color: #d63384;
-    font-weight: bold;
-    font-size: 1.2em;
-    padding: 10px 20px;
-    text-decoration: none;
-    margin-bottom: 15px;
-    background: none;
-    border: none;
-    text-align: left;
+.side-menu a,
+.side-menu button {
+  display: block;
+  color: #d63384;
+  font-weight: bold;
+  font-size: 1.2em;
+  padding: 10px 20px;
+  text-decoration: none;
+  margin-bottom: 15px;
+  background: none;
+  border: none;
+  text-align: left;
 }
 
-.side-menu a:hover, .side-menu button:hover {
-    text-decoration: underline;
-    cursor: pointer;
+.side-menu a:hover,
+.side-menu button:hover,
+.side-menu button a:hover {
+  text-decoration: underline;
+  cursor: pointer;
+  background-color: #b0296b;
 }
 
-/* Wishlist Cards */
+/* Wishlist Container */
 #wishlistsContainer {
-    margin-top: 50px;
+  margin-top: 50px;
 }
 
 .wishlist-card {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin: 20px auto;
-    max-width: 700px;
-    width: 95%;
-    overflow: hidden;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 700px;
+  width: 95%;
+  overflow: hidden;
 }
 
 .wishlist-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background-color: #f9f9f9;
-    border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.wishlist-heading h2 {
-    color: #d63384;
-    margin: 0;
-    padding: 5px 10px;
-    font-size: 1.5em;
-    text-align: center;
-    display: inline-block;
+.wishlist-title {
+  color: #d63384;
+  margin: 0;
 }
 
+/* Buttons inside Wishlist Cards */
 .wishlist-buttons button {
-    background-color: #d63384;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: 0.3s;
+  background-color: #d63384;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-left: 8px;
+  transition: background-color 0.3s;
 }
 
-.wishlist-buttons button:hover {
-    background-color: #b0296b;
+.wishlist-buttons .edit-btn {
+  background-color: #007bff;
+}
+
+.wishlist-buttons .edit-btn:hover {
+  background-color: #0069d9;
+}
+
+.wishlist-buttons .share-btn {
+  background-color: #28a745;
+}
+
+.wishlist-buttons .share-btn:hover {
+  background-color: #218838;
+}
+
+.wishlist-buttons .delete-btn {
+  background-color: #dc3545;
+}
+
+.wishlist-buttons .delete-btn:hover {
+  background-color: #c82333;
 }
 
 /* Wishlist Body Section */
 .wishlist-body {
-    padding: 20px;
-    text-align: left;
+  padding: 20px;
+  text-align: left;
 }
 
-.items-list, .funds-list {
-    list-style-type: none;
-    padding: 0;
+.items-list,
+.funds-list {
+  list-style-type: none;
+  padding: 0;
 }
 
-.item, .fund-box {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    margin: 15px 0;
-    padding: 15px 20px;
+.item,
+.fund-box {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin: 15px 0;
+  padding: 15px 20px;
 }
 
 .item a {
-    color: #d63384;
-    text-decoration: none;
-    font-weight: 500;
+  color: #d63384;
+  text-decoration: none;
+  font-weight: 500;
 }
 
 .item a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .item-price {
-    font-weight: bold;
-    font-size: 1.1em;
-    color: #333;
+  font-size: 1em;
+  color: #333;
+  padding-right: 20px;
 }
 
-/* Purchased Item Styling */
 .purchased-item {
-    opacity: 0.6;
-    text-decoration: line-through;
-    background-color: #f0f0f0 !important;
+  opacity: 0.6;
+  text-decoration: line-through;
+  background-color: #f0f0f0 !important;
 }
 
-.purchased-item a, .purchased-item .item-price {
-    color: #888;
+.purchased-item a,
+.purchased-item .item-price {
+  color: #888;
 }
 
 /* Fund Progress Bar */
 .fund-progress-bar {
-    background-color: #eee;
-    height: 10px;
-    border-radius: 5px;
-    margin-top: 5px;
-    overflow: hidden;
+  background-color: #eee;
+  height: 10px;
+  border-radius: 5px;
+  margin-top: 5px;
+  overflow: hidden;
 }
 
 .fund-progress-bar > div {
-    background-color: #d63384;
-    height: 100%;
-    border-radius: 5px;
+  background-color: #d63384;
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
 }
 
 /* Spinner */
 #loadingSpinner {
-    display: none;
-    font-size: 1.5em;
-    color: #d63384;
-    margin-top: 20px;
+  display: none;
+  font-size: 1.5em;
+  color: #d63384;
+  margin-top: 20px;
 }
 
-.side-menu button:hover,
-.side-menu button a:hover {
-    background-color: #b0296b;
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
-#menuToggle {
-    font-size: 30px;
-    cursor: pointer;
-    padding: 15px;
-    background-color: #d63384;
-    color: white;
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-    border-radius: 5px;
+.modal-content {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
-.side-menu {
-    height: 100%;
-    width: 0; /* stays closed initially */
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #f8d7da;
-    overflow-x: hidden;
-    transition: 0.3s;
-    padding-top: 60px;
+.modal-content h2 {
+  margin-bottom: 15px;
+  font-size: 1.5rem;
 }
 
-.side-menu button, .side-menu button a {
-    background-color: #d63384;
-    color: white;
-    border: none;
-    padding: 10px 15px;      /* <<< left-right padding */
-    margin: 10px;            /* <<< around each button */
-    text-align: left;        /* <<< left-align text inside */
-    width: 200px;            /* <<< fixed width */
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 40px;        /* <<< larger top margin */
-    font-size: 1em;          /* <<< same font size */
-    font-weight: normal;     /* <<< not bold */
-}
-.title {
-    font-size: 2.5em;
-    font-weight: bold;
-    color: #d63384;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-.title a {
-    color: #d63384;
-    text-decoration: none;
-    font-size: 1em;  /* Corrected from 2.5em to 1em to avoid double-sizing */
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+.modal-content p {
+  margin: 5px 0;
+  font-size: 1rem;
 }
 
-.title a:hover {
-    text-decoration: underline;
+.modal-content input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0 20px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
-.page-title {
-    font-size: 1.8em;
-    font-weight: bold;
-    color: #d63384;
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-/* --- Buttons inside Wishlist Cards --- */
+.modal-buttons button {
+  flex: 1;
+  padding: 8px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
-.wishlist-buttons button {
-    background-color: #d63384; /* Same pink as main theme */
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
-    margin-left: 8px;
-    transition: background-color 0.3s;
-  }
-  
-  .wishlist-buttons button:hover {
-    background-color: #b0296b; /* Darker pink on hover */
-  }
-  
-  /* --- Special Styling for Delete Button --- */
-  
-  .wishlist-buttons .delete-btn {
-    background-color: #dc3545; /* Bootstrap Red */
-    color: white;
-  }
-  
-  .wishlist-buttons .delete-btn:hover {
-    background-color: #c82333; /* Darker Red */
-  }
-  
-  /* --- Share Button (just reuse normal button style) --- */
-  
-  /* No special rule needed, Share button uses normal pink button styling */
-  
-  /* --- Wishlist Header --- */
-  
-  .wishlist-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background-color: #f9f9f9;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .wishlist-title {
-    color: #d63384;
-    margin: 0;
-  }
-  
-  .wishlist-card {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin: 20px auto;
-    max-width: 700px;
-    width: 95%;
-    overflow: hidden;
-  }
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5); /* semi-transparent dark background */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  .modal-content {
-    background: white;
-    padding: 20px 30px;
-    border-radius: 10px;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    text-align: center;
-  }
-  
-  .modal-content h2 {
-    margin-bottom: 15px;
-    font-size: 1.5rem;
-  }
-  
-  .modal-content p {
-    margin: 5px 0;
-    font-size: 1rem;
-  }
-  
-  .modal-content input[type="number"] {
-    width: 100%;
-    padding: 8px;
-    margin: 10px 0 20px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  
-  .modal-buttons button {
-    flex: 1;
-    padding: 8px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  #confirmContributeBtn {
-    background-color: #28a745; /* green */
-    color: white;
-  }
-  
-  #cancelContributeBtn {
-    background-color: #dc3545; /* red */
-    color: white;
-  }
-  .contribute-btn {
-    background-color: #d63384; /* same pink */
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-    font-size: 0.9em;
-    transition: background-color 0.3s;
-  }
-  
-  .contribute-btn:hover {
-    background-color: #b0296b; /* darker pink on hover */
-  }
-  
+#confirmContributeBtn {
+  background-color: #28a745;
+  color: white;
+}
+
+#cancelContributeBtn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.contribute-btn {
+  background-color: #d63384;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 0.9em;
+  transition: background-color 0.3s;
+}
+
+.contribute-btn:hover {
+  background-color: #b0296b;
+}
+
+.wishlist-total {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  margin-top: 10px;
+  font-weight: bold;
+  color: black;
+  margin-left: 20px;
+  display: block;
+}
+
+.purchase-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.purchase-btn:hover {
+  background-color: #218838;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.item-content {
+  flex: 1;
+}
+
+.item-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.highlight-total {
+  background-color: #fff3cd;
+  transition: background-color 0.5s ease;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #d63384;
+}
+
+.hide-purchased-btn {
+  background-color: #d63384;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+  margin-left: 12px;
+}
+
+.hide-purchased-btn:hover {
+  background-color: #b0296b;
+}
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  transition: background-color 0.3s;
+}
+.delete-btn:hover {
+  background-color: #c82333;
+}
+.hide-items-btn:hover {
+  background-color: #4d79ff;
+  color: white;
+}
+.toggle-items-btn {
+  background-color: #6c757d; /* subtle gray */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-items-btn:hover {
+  background-color: #5a6268; /* darker gray on hover */
+}
