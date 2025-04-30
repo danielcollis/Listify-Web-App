@@ -1,9 +1,18 @@
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-analytics.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  updatePassword
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
   // Firebase configuration
   const firebaseConfig = {
@@ -21,14 +30,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
 
-  // Check URL hash for direct navigation
-  if(window.location.hash === '#register') {
+  // Direct navigation to #register
+  if (window.location.hash === '#register') {
     document.getElementById('loginForm').style.display = 'none';
     document.getElementById('registerForm').style.display = 'block';
     document.getElementById('reset-form').style.display = 'none';
   }
 
-  // Handle Login
+  // Login
   document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value;
@@ -38,13 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = "../home.html"; // Redirect to home
+      window.location.href = "../home.html";
     } catch (error) {
       loginError.textContent = "Login failed: " + error.message;
     }
   });
 
-  // Handle Registration
+  // Register
   document.getElementById("registerForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("registerEmail").value.trim();
@@ -53,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerError = document.getElementById("register-error");
     registerError.textContent = '';
 
-    // Basic validation
     if (!email || !password || !confirmPassword) {
       registerError.textContent = 'Please fill in all fields.';
       return;
@@ -80,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Handle Password Reset
+  // Reset Password
   document.getElementById("reset-button").addEventListener('click', async () => {
     const email = document.getElementById("reset-email").value.trim();
     const resetMessage = document.getElementById("reset-message");
@@ -108,52 +116,111 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // UI: Toggle form views
-  document.getElementById('show-register').addEventListener('click', function(e) {
+  // Change Password
+  document.getElementById("change-password-button").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("change-email").value.trim();
+    const currentPassword = document.getElementById("current-password").value.trim();
+    const newPassword = document.getElementById("new-password").value.trim();
+    const message = document.getElementById("change-password-message");
+
+    message.textContent = "";
+    message.className = "success-message";
+
+    if (!email || !currentPassword || !newPassword) {
+      message.textContent = "Please fill in all fields.";
+      message.className = "error-message";
+      return;
+    }
+
+    if (!isValidPassword(newPassword)) {
+      message.textContent = "New password does not meet requirements.";
+      message.className = "error-message";
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, currentPassword);
+      const user = userCredential.user;
+
+      const credential = EmailAuthProvider.credential(email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPassword);
+
+      message.textContent = "Password updated successfully. You can now log in.";
+      message.className = "success-message";
+
+      // Redirect to login screen after a short delay
+      setTimeout(() => {
+        document.getElementById("show-login").click();
+        clearAllFields();
+      }, 1500);
+
+    } catch (error) {
+      message.textContent = "Password update failed: " + error.message;
+      message.className = "error-message";
+    }
+  });
+
+  // Toggle Views
+  document.getElementById('show-register').addEventListener('click', function (e) {
     e.preventDefault();
     document.getElementById('loginForm').style.display = 'none';
     document.getElementById('registerForm').style.display = 'block';
     document.getElementById('reset-form').style.display = 'none';
+    document.getElementById('change-password-form').style.display = 'none';
     clearAllFields();
   });
 
-  document.getElementById('show-login').addEventListener('click', function(e) {
+  document.getElementById('show-login').addEventListener('click', function (e) {
     e.preventDefault();
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('registerForm').style.display = 'none';
     document.getElementById('reset-form').style.display = 'none';
+    document.getElementById('change-password-form').style.display = 'none';
     clearAllFields();
   });
 
-  document.getElementById('forgot-password').addEventListener('click', function(e) {
+  document.getElementById('show-change-password').addEventListener('click', function (e) {
     e.preventDefault();
     document.getElementById('loginForm').style.display = 'none';
     document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('reset-form').style.display = 'block';
+    document.getElementById('reset-form').style.display = 'none';
+    document.getElementById('change-password-form').style.display = 'block';
     clearAllFields();
   });
 
-  document.getElementById('back-to-login').addEventListener('click', function(e) {
+  document.getElementById('back-to-login-reset').addEventListener('click', function (e) {
     e.preventDefault();
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('registerForm').style.display = 'none';
     document.getElementById('reset-form').style.display = 'none';
+    document.getElementById('change-password-form').style.display = 'none';
     clearAllFields();
   });
 
-  // Helper: Validate email
+  document.getElementById('back-to-login-change').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('reset-form').style.display = 'none';
+    document.getElementById('change-password-form').style.display = 'none';
+    clearAllFields();
+  });
+
+  // Validate Email
   function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  // Helper: Validate password strength
+  // Validate Password
   function isValidPassword(password) {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return passwordRegex.test(password);
   }
 
-  // Helper: Clear all form fields and errors
+  // Clear form fields
   function clearAllFields() {
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
@@ -166,13 +233,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('reset-email').value = '';
     document.getElementById('reset-message').textContent = '';
+
+    document.getElementById('change-email').value = '';
+    document.getElementById('current-password').value = '';
+    document.getElementById('new-password').value = '';
+    document.getElementById('change-password-message').textContent = '';
   }
 
-  // Optional: Redirect to home if already logged in
+  // Check if already signed in
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // Already logged in
-      console.log("User is already signed in.");
+      console.log("User already signed in.");
     }
   });
+
 });

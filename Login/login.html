@@ -23,7 +23,7 @@
         <button type="submit" class="btn">Login</button>
         <div class="form-footer">
           <p>Don't have an account? <a href="#" id="show-register">Register</a></p>
-          <p><a href="#" id="forgot-password">Forgot Password?</a></p>
+          <p><a href="#" id="show-change-password">Change Password</a></p>
         </div>
         <div class="error-message" id="login-error"></div>
       </form>
@@ -61,11 +61,30 @@
         </div>
         <button id="reset-button" class="btn">Send Reset Link</button>
         <div class="form-footer">
-          <p><a href="#" id="back-to-login">Back to Login</a></p>
+          <p><a href="#" id="back-to-login-reset">Back to Login</a></p>
         </div>
         <div id="reset-message" class="success-message"></div>
       </div>
-    </div>
+
+    
+      <!-- Change Password Form -->
+      <div class="form-container" id="change-password-form" style="display: none;">
+        <h2>Change Password</h2>
+        <div class="input-group">
+          <input type="email" id="change-email" placeholder="Email" required />
+        </div>
+        <div class="input-group">
+          <input type="password" id="current-password" placeholder="Current Password" required />
+        </div>
+        <div class="input-group">
+          <input type="password" id="new-password" placeholder="New Password" required />
+        </div>
+        <button id="change-password-button" class="btn">Change Password</button>
+        <div class="form-footer">
+          <p><a href="#" id="back-to-login-change">Back to Login</a></p>
+        </div>
+        <div id="change-password-message" class="success-message"></div>
+      </div>
 
     <!-- Local Storage Disclaimer -->
     <div class="form-footer">
