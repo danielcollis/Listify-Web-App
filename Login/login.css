@@ -124,6 +124,23 @@ input:focus {
     text-align: center;
 }
 
+.show-hide-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #d63384;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 0;
+  }
+  
+  .show-hide-btn:hover {
+    text-decoration: underline;
+  }  
+
 /* Add a subtle animation for form transitions */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
