@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Check if the link contains the list parameter
             if (url.searchParams.has('list')) {
                 // Redirect to the list page with the shared list parameter
-                window.location.href = `list.html${url.search}`;
+                window.location.href = `/My_Wishlist/my_wishlist.html?${url.searchParams.toString()}`;
             } else {
                 alert("Invalid shared list link. Please copy the entire link.");
             }
