@@ -124,22 +124,49 @@ input:focus {
     text-align: center;
 }
 
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  
+.input-group input[type="password"] {
+    padding-right: 60px; /* Space for the Show button */
+  }
+  
 .show-hide-btn {
     position: absolute;
-    right: 10px;
     top: 50%;
+    right: 15px;
     transform: translateY(-50%);
     background: none;
     border: none;
-    color: #d63384;
-    font-size: 0.9em;
+    color: #b23b87;
+    font-weight: bold;
     cursor: pointer;
-    padding: 0;
+    font-size: 0.9em;
   }
   
-  .show-hide-btn:hover {
-    text-decoration: underline;
-  }  
+.password-wrapper {
+    position: relative;
+  }
+  
+.password-wrapper input {
+    width: 100%;
+    padding-right: 60px; /* make room for Show button */
+  }
+  
+.password-wrapper .show-hide-btn {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #b23b87;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
 
 /* Add a subtle animation for form transitions */
 @keyframes fadeIn {

@@ -257,4 +257,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });  
 
+  // Global togglePassword function used by inline onclick buttons
+  window.togglePassword = function(fieldId, toggleBtn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      toggleBtn.textContent = 'Hide';
+    } else {
+      input.type = 'password';
+      toggleBtn.textContent = 'Show';
+    }
+  };
+
+
 });
