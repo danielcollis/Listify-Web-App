@@ -667,3 +667,5 @@ async function togglePurchasedStatus(docId, currentStatus, wishlistId) {
   }
 }
 
+
+
