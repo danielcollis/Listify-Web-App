@@ -346,7 +346,16 @@ function renderItemsAndFunds(list, body) {
         toggleBtn.title = item.purchased ? 'Unmark as Purchased' : 'Mark as Purchased';
 
         if (isSharedView) {
-          // Shared view: recalculate locally
+          // For shared view, we need to get the item ID from the decoded URL data
+          const sharedData = JSON.parse(decodeURIComponent(atob(new URLSearchParams(window.location.search).get('list'))));
+          
+          // Update Firestore directly if we have the docId
+          if (item.docId && item.wishlistId) {
+            togglePurchasedStatus(item.docId, !item.purchased, item.wishlistId);
+            console.log("Updated purchase status in Firestore for shared item:", item.docId);
+          }
+          
+          // Recalculate locally for UI update
           const totalElement = document.querySelector('.wishlist-total[data-id="shared"]');
           if (totalElement) {
             let updatedTotal = 0;
@@ -367,33 +376,6 @@ function renderItemsAndFunds(list, body) {
         } else {
           // Authenticated user: update Firestore and recalculate total
           togglePurchasedStatus(item.docId, !item.purchased, item.wishlistId);
-        }
-
-      
-        if (isSharedView) {
-          // Shared list: calculate locally
-          const totalElement = document.querySelector('.wishlist-total[data-id="shared"]');
-          if (totalElement) {
-            let updatedTotal = 0;
-            (list.items || []).forEach(i => {
-              if (!i.purchased) {
-                const price = parseFloat(i.price?.replace(/[^0-9.]/g, ''));
-                if (!isNaN(price)) updatedTotal += price;
-              }
-            });
-            (list.funds || []).forEach(fund => {
-              const remaining = fund.goal - fund.contributed;
-              if (!isNaN(remaining)) updatedTotal += remaining;
-            });
-            totalElement.textContent = `Total: $${updatedTotal.toFixed(2)}`;
-            totalElement.classList.add('highlight-total');
-            setTimeout(() => totalElement.classList.remove('highlight-total'), 500);
-          }
-        } else {
-          // Authenticated user: fetch total from Firestore
-          calculateWishlistTotal(item.wishlistId).then(total => {
-            updateTotalDisplay(item.wishlistId, parseFloat(total));
-          });
         }
       });
       
@@ -495,7 +477,13 @@ async function openSharePopup(list) {
     const itemsQuery = query(collection(db, "wishlistItems"), where("wishlistId", "==", list.id));
     const itemsSnapshot = await getDocs(itemsQuery);
     const items = [];
-    itemsSnapshot.forEach(doc => items.push(doc.data()));
+    itemsSnapshot.forEach(doc => {
+      // Include both the document ID and data in the shared items
+      const item = doc.data();
+      item.docId = doc.id;
+      item.wishlistId = list.id;
+      items.push(item);
+    });
 
     const fundsQuery = query(collection(db, "wishlistFunds"), where("wishlistId", "==", list.id));
     const fundsSnapshot = await getDocs(fundsQuery);
@@ -503,6 +491,7 @@ async function openSharePopup(list) {
     fundsSnapshot.forEach(docSnap => {
       const fund = docSnap.data();
       fund.docId = docSnap.id;
+      fund.wishlistId = list.id; // Add wishlistId to funds as well
       funds.push(fund);
     });
 
@@ -678,6 +667,17 @@ function processUrlParameters() {
     try {
       const decodedData = decodeURIComponent(atob(encodedList));
       const loadedData = JSON.parse(decodedData);
+      
+      // Make sure each item in the shared list has the wishlistId and docId if available
+      if (loadedData.items) {
+        loadedData.items.forEach(item => {
+          // Make sure each item has a docId and wishlistId for database updates
+          if (!item.docId) {
+            console.warn("Item does not have a docId, database updates won't be possible");
+          }
+        });
+      }
+      
       isSharedView = true;
       displayWishlists([loadedData]);
       document.getElementById('loadingSpinner').style.display = 'none';
