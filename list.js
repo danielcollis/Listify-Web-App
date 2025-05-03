@@ -1387,20 +1387,22 @@ function applyFilters() {
     const selectedPrice = document.getElementById("filterPriceRange").value;
     const selectedType = document.getElementById("filterProductType").value;
 
-    const filtered = listItems.filter(item => {
+    const filteredItems = listItems.filter(item => {
         const priceRange = getPriceRange(item.price);
         const matchPrice = !selectedPrice || selectedPrice === "" || priceRange === selectedPrice;
         const matchType = !selectedType || selectedType === "" || item.productType === selectedType;
         return matchPrice && matchType;
     });
 
-    renderFilteredItems(filtered);
+    // Always include all funds in the filtered view
+    renderFilteredItems(filteredItems, fundItems);
 }
 
-function renderFilteredItems(filteredItems) {
+function renderFilteredItems(filteredItems, funds) {
     const listContainer = document.getElementById("linkList");
     listContainer.innerHTML = ''; // Clear list
 
+    // First render the filtered items
     filteredItems.forEach((item, index) => {
         const listItem = document.createElement('li');
         listItem.setAttribute('data-item-index', index);
@@ -1452,6 +1454,11 @@ function renderFilteredItems(filteredItems) {
         }
 
         listContainer.appendChild(listItem);
+    });
+
+    // Then render all funds
+    funds.forEach((fund, index) => {
+        createFundElement(fund, index);
     });
 }
 
