@@ -510,14 +510,47 @@ async function openSharePopup(list) {
     const encodedData = btoa(encodeURIComponent(JSON.stringify(sharedPayload)));
     const shareableLink = `${window.location.origin}${window.location.pathname}?list=${encodedData}`;
 
-    const dummyInput = document.createElement('input');
-    dummyInput.value = shareableLink;
-    document.body.appendChild(dummyInput);
-    dummyInput.select();
-    document.execCommand('copy');
-    document.body.removeChild(dummyInput);
-
-    alert("Share link copied to clipboard!");
+    try {
+      // Use the modern Clipboard API
+      await navigator.clipboard.writeText(shareableLink);
+      alert("Share link copied to clipboard!");
+    } catch (clipboardError) {
+      // Fallback to the older method if Clipboard API fails
+      console.error('Clipboard API failed:', clipboardError);
+      
+      const dummyInput = document.createElement('input');
+      dummyInput.value = shareableLink;
+      dummyInput.setAttribute('readonly', '');
+      dummyInput.style.position = 'absolute';
+      dummyInput.style.left = '-9999px';
+      document.body.appendChild(dummyInput);
+      
+      // For mobile devices
+      if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
+        dummyInput.contentEditable = true;
+        dummyInput.readOnly = false;
+        
+        // Select the text
+        const range = document.createRange();
+        range.selectNodeContents(dummyInput);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        dummyInput.setSelectionRange(0, 999999);
+      } else {
+        dummyInput.select();
+      }
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(dummyInput);
+      
+      if (successful) {
+        alert("Share link copied to clipboard!");
+      } else {
+        // If all else fails, show the link to the user to copy manually
+        prompt("Copy this link to share your wishlist:", shareableLink);
+      }
+    }
   } catch (error) {
     console.error('Error creating share link:', error);
     alert('Failed to create share link. Please try again.');
@@ -558,13 +591,11 @@ function openContributeModal(fund, body) {
     }
 
     try {
-      if (!isSharedView) {
-        // Authenticated view: Update Firestore
-        const fundDocRef = doc(db, "wishlistFunds", fund.docId);
-        await updateDoc(fundDocRef, {
-          contributed: fund.contributed + amount
-        });
-      }
+      // Always update Firestore regardless of whether it's a shared view or not
+      const fundDocRef = doc(db, "wishlistFunds", fund.docId);
+      await updateDoc(fundDocRef, {
+        contributed: fund.contributed + amount
+      });
 
       // Update the specific fund object in memory
       fund.contributed += amount;
