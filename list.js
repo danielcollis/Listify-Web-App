@@ -651,6 +651,16 @@ function createEditModal(listItem, itemIndex) {
             if (formattedPrice) updateTotal(formattedPrice, true);
         }
         
+        // Update the item in Firestore database
+        const docId = listItem.getAttribute('data-doc-id');
+        if (docId) {
+            updateItemInFirestore(docId, {
+                text: newName,
+                price: formattedPrice
+            });
+            console.log("Item updated in Firestore with new name and price");
+        }
+        
         document.body.removeChild(modal);
         document.head.removeChild(style);
     });
