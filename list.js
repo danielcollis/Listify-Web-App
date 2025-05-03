@@ -1403,6 +1403,11 @@ function renderFilteredItems(filteredItems) {
 
     filteredItems.forEach((item, index) => {
         const listItem = document.createElement('li');
+        listItem.setAttribute('data-item-index', index);
+        
+        if (item.docId) {
+            listItem.setAttribute('data-doc-id', item.docId);
+        }
 
         const linkElement = document.createElement('a');
         linkElement.href = item.link;
@@ -1440,6 +1445,11 @@ function renderFilteredItems(filteredItems) {
         listItem.appendChild(purchaseButton);
         listItem.appendChild(editButton);
         listItem.appendChild(deleteButton);
+
+        // Apply purchased class if the item is purchased
+        if (item.purchased) {
+            listItem.classList.add('purchased-item');
+        }
 
         listContainer.appendChild(listItem);
     });
