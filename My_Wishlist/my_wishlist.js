@@ -558,39 +558,13 @@ function openContributeModal(fund, body) {
     }
 
     try {
-      const fundDocRef = doc(db, "wishlistFunds", fund.docId);
-      await updateDoc(fundDocRef, {
-        contributed: fund.contributed + amount
-      });
-
-      //Recalculate and update total
-      if (isSharedView) {
-        // Update shared view total manually
-        list.funds.forEach(f => {
-          if (f.docId === fund.docId) {
-            f.contributed += amount;
-          }
+      if (!isSharedView) {
+        // Authenticated view: Update Firestore
+        const fundDocRef = doc(db, "wishlistFunds", fund.docId);
+        await updateDoc(fundDocRef, {
+          contributed: fund.contributed + amount
         });
-        let updatedTotal = 0;
-        (list.items || []).forEach(item => {
-          if (!item.purchased) {
-            const price = parseFloat(item.price?.replace(/[^0-9.]/g, ''));
-            if (!isNaN(price)) updatedTotal += price;
-          }
-        });
-        (list.funds || []).forEach(fund => {
-          const remaining = fund.goal - fund.contributed;
-          if (!isNaN(remaining)) updatedTotal += remaining;
-        });
-        updateTotalDisplay('shared', updatedTotal);
-      } else {
-        // Authenticated view: fetch from Firestore
-        const updatedTotal = await calculateWishlistTotal(fund.wishlistId);
-        updateTotalDisplay(fund.wishlistId, parseFloat(updatedTotal));
       }
-      
-
-      alert('Thank you for your contribution!');
 
       // Update the specific fund object in memory
       fund.contributed += amount;
@@ -604,14 +578,45 @@ function openContributeModal(fund, body) {
           progressFill.style.width = `${percent}%`;
         }
 
-        // Also update the text content
+        // Update the text content
         fundBox.querySelector('.fund-name').innerHTML = `Fund: ${fund.name}`;
         fundBox.querySelector('.fund-goal').textContent = `Goal: $${fund.goal.toFixed(2)}`;
         fundBox.querySelector('.fund-contributed').textContent = `Already Contributed: $${fund.contributed.toFixed(2)}`;
         fundBox.querySelector('.fund-remaining').textContent = `Remaining: $${(fund.goal - fund.contributed).toFixed(2)}`;
 
+        // If fund is now complete, add completed class
+        if (fund.contributed >= fund.goal) {
+          fundBox.classList.add('completed-fund');
+          const contributeBtn = fundBox.querySelector('.contribute-btn');
+          if (contributeBtn) {
+            contributeBtn.remove();
+          }
+        }
       }
 
+      // Update total display
+      if (isSharedView) {
+        // For shared view, calculate total locally
+        let updatedTotal = 0;
+        const list = JSON.parse(decodeURIComponent(atob(new URLSearchParams(window.location.search).get('list'))));
+        (list.items || []).forEach(item => {
+          if (!item.purchased) {
+            const price = parseFloat(item.price?.replace(/[^0-9.]/g, ''));
+            if (!isNaN(price)) updatedTotal += price;
+          }
+        });
+        (list.funds || []).forEach(f => {
+          const remaining = f.goal - (f.docId === fund.docId ? fund.contributed : f.contributed);
+          if (!isNaN(remaining)) updatedTotal += remaining;
+        });
+        updateTotalDisplay('shared', updatedTotal);
+      } else {
+        // For authenticated view, fetch from Firestore
+        const updatedTotal = await calculateWishlistTotal(fund.wishlistId);
+        updateTotalDisplay(fund.wishlistId, parseFloat(updatedTotal));
+      }
+
+      alert('Thank you for your contribution!');
       overlay.remove();
     } catch (error) {
       console.error('Error contributing:', error);
